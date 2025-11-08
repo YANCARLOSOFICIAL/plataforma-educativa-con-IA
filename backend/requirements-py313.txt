@@ -1,0 +1,27 @@
+# Requirements optimizados para Python 3.13
+# Si tienes problemas con requirements.txt, usa este archivo:
+# pip install -r requirements-py313.txt
+
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+python-dotenv
+pydantic
+pydantic-settings
+alembic
+openai
+google-generativeai
+httpx
+aiofiles
+python-docx
+openpyxl
+Pillow
+bcrypt
+email-validator
+
+# Si psycopg2-binary da problemas, intenta con:
+# psycopg[binary]

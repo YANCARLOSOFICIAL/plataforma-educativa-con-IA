@@ -1,0 +1,41 @@
+# Instalación mínima para comenzar - Python 3.13
+# Este archivo instala solo lo esencial para que el backend funcione
+
+# Framework web
+fastapi
+uvicorn[standard]
+
+# Base de datos
+sqlalchemy
+psycopg2-binary
+
+# Autenticación
+python-jose[cryptography]
+bcrypt>=4.1.2
+
+# Validación y configuración
+pydantic
+pydantic-settings
+python-dotenv
+email-validator
+
+# Utilidades
+python-multipart
+httpx
+aiofiles
+
+# Migraciones
+alembic
+
+# IA - OpenAI (instalar solo si lo usarás)
+# Descomenta la siguiente línea para usar OpenAI:
+# openai>=1.0.0
+
+# IA - Gemini (instalar solo si lo usarás)
+# Descomenta la siguiente línea para usar Gemini:
+# google-generativeai
+
+# Exportación
+python-docx
+openpyxl
+Pillow
