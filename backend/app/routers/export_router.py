@@ -52,6 +52,49 @@ async def export_activity_to_word(
         raise HTTPException(status_code=500, detail=f"Error al exportar: {str(e)}")
 
 
+@router.get("/{activity_id}/pptx")
+async def export_activity_to_pptx(
+    activity_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Exporta una actividad tipo 'slides' a PowerPoint (.pptx)
+    """
+    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+
+    if not activity:
+        raise HTTPException(status_code=404, detail="Actividad no encontrada")
+
+    # Verificar permisos
+    if not activity.is_public and activity.creator_id != current_user.id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="No tienes permiso para exportar esta actividad")
+
+    # Solo para slides
+    if activity.activity_type.value != "slides":
+        raise HTTPException(status_code=400, detail=f"El tipo de actividad '{activity.activity_type.value}' no es exportable a PPTX")
+
+    try:
+        activity_data = {
+            "title": activity.title,
+            "description": activity.description,
+            "content": activity.content
+        }
+
+        buffer = export_service.export_to_pptx(activity_data, activity.activity_type.value)
+
+        filename = f"{activity.title.replace(' ', '_')}.pptx"
+
+        return StreamingResponse(
+            buffer,
+            media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al exportar: {str(e)}")
+
+
 @router.get("/{activity_id}/excel")
 async def export_activity_to_excel(
     activity_id: int,

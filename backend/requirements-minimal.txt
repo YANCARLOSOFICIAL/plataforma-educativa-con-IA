@@ -39,3 +39,4 @@ alembic
 python-docx
 openpyxl
 Pillow
+python-pptx

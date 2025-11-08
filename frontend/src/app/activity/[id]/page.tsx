@@ -38,6 +38,17 @@ export default function ActivityDetailPage() {
     }
   };
 
+  const handleExportPptx = async () => {
+    if (!activity) return;
+    try {
+      const blob = await exportAPI.exportToPptx(activity.id);
+      downloadFile(blob, `${activity.title}.pptx`);
+    } catch (error) {
+      console.error('Error exportando a PPTX:', error);
+      alert('Error al exportar a PPTX');
+    }
+  };
+
   const handleExportExcel = async () => {
     if (!activity) return;
     try {
@@ -134,6 +145,12 @@ export default function ActivityDetailPage() {
               <button onClick={togglePublic} className="btn btn-secondary flex items-center gap-2">
                 <Share2 className="w-4 h-4" />
                 {activity.is_public ? 'Hacer Privado' : 'Hacer Público'}
+              </button>
+            )}
+            {activity.activity_type === 'slides' && (
+              <button onClick={handleExportPptx} className="btn btn-secondary flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                Exportar a PPTX
               </button>
             )}
           </div>

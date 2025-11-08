@@ -142,6 +142,23 @@ export default function ActivitiesPage() {
                       <Download className="w-4 h-4" />
                       Word
                     </button>
+                    {activity.activity_type === 'slides' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const blob = await exportAPI.exportToPptx(activity.id);
+                            downloadFile(blob, `${activity.title}.pptx`);
+                          } catch (error) {
+                            console.error('Error exportando a PPTX:', error);
+                            alert('Error al exportar a PPTX');
+                          }
+                        }}
+                        className="btn btn-secondary text-sm flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        PPTX
+                      </button>
+                    )}
                     {['exam', 'survey', 'rubric', 'crossword', 'word_search'].includes(activity.activity_type) && (
                       <button
                         onClick={() => handleExportExcel(activity.id, activity.title)}

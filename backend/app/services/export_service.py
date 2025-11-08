@@ -1,6 +1,8 @@
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from pptx import Presentation
+from pptx.util import Inches as PptxInches, Pt as PptxPt
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 from io import BytesIO
@@ -98,6 +100,71 @@ class ExportService:
         # Guardar en buffer
         buffer = BytesIO()
         wb.save(buffer)
+        buffer.seek(0)
+        return buffer
+
+    def export_to_pptx(self, activity_data: Dict[str, Any], activity_type: str) -> BytesIO:
+        """
+        Exporta una actividad de tipo 'slides' a formato PowerPoint (.pptx)
+        """
+        if activity_type != "slides":
+            raise ValueError("Sólo se puede exportar a PPTX actividades de tipo 'slides'")
+
+        prs = Presentation()
+
+        try:
+            content = json.loads(activity_data.get("content", "{}")) if isinstance(activity_data.get("content"), str) else activity_data.get("content", {})
+        except:
+            content = {}
+
+        for slide_data in content.get("slides", []):
+            # Usar layout título + contenido si está disponible
+            layout = prs.slide_layouts[1] if len(prs.slide_layouts) > 1 else prs.slide_layouts[0]
+            slide = prs.slides.add_slide(layout)
+
+            # Título
+            title_text = slide_data.get("title", "")
+            if title_text:
+                if slide.shapes.title:
+                    slide.shapes.title.text = title_text
+
+            # Contenido (lista de puntos) -> colocar en el primer placeholder con cuadro de texto
+            body_tf = None
+            for shape in slide.shapes:
+                if hasattr(shape, 'text_frame') and shape.text_frame is not None and not getattr(shape, 'is_placeholder', False):
+                    body_tf = shape.text_frame
+                    break
+
+            # Si no encontramos text_frame, crear textbox
+            if body_tf is None:
+                left = PptxInches(1)
+                top = PptxInches(1.5)
+                width = PptxInches(8)
+                height = PptxInches(4.5)
+                txBox = slide.shapes.add_textbox(left, top, width, height)
+                body_tf = txBox.text_frame
+
+            # Limpiar texto previo
+            body_tf.clear()
+
+            for idx, point in enumerate(slide_data.get("content", [])):
+                p = body_tf.add_paragraph()
+                p.text = point
+                p.level = 0
+                try:
+                    p.font.size = PptxPt(18)
+                except:
+                    pass
+
+            # Notas de la diapositiva
+            if "notes" in slide_data and slide.notes_slide is not None:
+                try:
+                    slide.notes_slide.notes_text_frame.text = slide_data.get("notes", "")
+                except:
+                    pass
+
+        buffer = BytesIO()
+        prs.save(buffer)
         buffer.seek(0)
         return buffer
 
