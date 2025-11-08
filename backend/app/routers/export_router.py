@@ -118,7 +118,7 @@ async def export_activity_to_excel(
     if activity.activity_type.value not in exportable_types:
         raise HTTPException(
             status_code=400,
-            detail=f"El tipo de actividad '{activity.activity_type.value}' no es exportable a Excel"
+            detail=f"El tipo de actividad '{activity.activity_type.value}' no es exportable a Excel. Solo se pueden exportar: {', '.join(exportable_types)}"
         )
 
     try:
@@ -129,11 +129,21 @@ async def export_activity_to_excel(
             "content": activity.content
         }
 
+        # Debug: Log del contenido
+        print(f"\n=== EXPORTANDO A EXCEL ===")
+        print(f"Tipo: {activity.activity_type.value}")
+        print(f"Título: {activity.title}")
+        print(f"Contenido (primeros 200 chars): {str(activity.content)[:200]}")
+
         # Generar documento Excel
         buffer = export_service.export_to_excel(activity_data, activity.activity_type.value)
 
-        # Crear nombre de archivo
-        filename = f"{activity.title.replace(' ', '_')}.xlsx"
+        # Crear nombre de archivo seguro
+        safe_filename = "".join(c for c in activity.title if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        safe_filename = safe_filename.replace(' ', '_')[:50]  # Limitar longitud
+        filename = f"{safe_filename}.xlsx"
+
+        print(f"Archivo generado exitosamente: {filename}\n")
 
         return StreamingResponse(
             buffer,
@@ -141,5 +151,11 @@ async def export_activity_to_excel(
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
 
+    except ValueError as e:
+        print(f"Error de validación: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        print(f"Error inesperado al exportar: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error al exportar: {str(e)}")

@@ -64,9 +64,19 @@ export default function DashboardPage() {
     return null;
   }
 
-  const handleLogout = () => {
-    clearAuth();
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      // Llamar al endpoint de logout para borrar la cookie httpOnly
+      await authAPI.logout();
+    } catch (error) {
+      console.error('Error al cerrar sesión en el servidor:', error);
+      // Continuar con logout local aunque falle el servidor
+    } finally {
+      // Limpiar estado local
+      clearAuth();
+      // Redirigir a login
+      router.push('/login');
+    }
   };
 
   const contentTypes = [

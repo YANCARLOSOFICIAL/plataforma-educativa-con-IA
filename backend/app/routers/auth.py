@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
+from typing import Optional
 from ..database import get_db
 from ..models.user import User
 from ..models.credit import TransactionType
@@ -10,6 +11,8 @@ from ..utils.auth import (
     verify_password,
     get_password_hash,
     create_access_token,
+    create_refresh_token,
+    verify_refresh_token,
     get_current_active_user
 )
 from ..services.credit_service import credit_service
@@ -19,7 +22,7 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 
 @router.post("/register", response_model=Token)
-async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+async def register(user_data: UserCreate, response: Response, db: Session = Depends(get_db)):
     """
     Registra un nuevo usuario
     """
@@ -60,8 +63,19 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         description="Créditos iniciales"
     )
 
-    # Crear token
+    # Crear tokens
     access_token = create_access_token(data={"sub": new_user.email})
+    refresh_token = create_refresh_token(data={"sub": new_user.email})
+
+    # Establecer refresh token en cookie httpOnly
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=False,  # Cambiar a True en producción con HTTPS
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60  # 7 días en segundos
+    )
 
     return Token(
         access_token=access_token,
@@ -72,6 +86,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 async def login(
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
@@ -93,7 +108,19 @@ async def login(
             detail="Usuario inactivo"
         )
 
+    # Crear tokens
     access_token = create_access_token(data={"sub": user.email})
+    refresh_token = create_refresh_token(data={"sub": user.email})
+
+    # Establecer refresh token en cookie httpOnly
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=False,  # Cambiar a True en producción con HTTPS
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60  # 7 días en segundos
+    )
 
     return Token(
         access_token=access_token,
@@ -131,3 +158,64 @@ async def get_credits(current_user: User = Depends(get_current_active_user), db:
             for t in transactions
         ]
     }
+
+
+@router.post("/refresh", response_model=Token)
+async def refresh_token(
+    response: Response,
+    refresh_token: Optional[str] = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Refresca el access token usando el refresh token de la cookie
+    """
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token no encontrado"
+        )
+
+    # Verificar el refresh token
+    email = verify_refresh_token(refresh_token)
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token inválido o expirado"
+        )
+
+    # Buscar usuario
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario no encontrado o inactivo"
+        )
+
+    # Crear nuevo access token y refresh token
+    new_access_token = create_access_token(data={"sub": user.email})
+    new_refresh_token = create_refresh_token(data={"sub": user.email})
+
+    # Actualizar la cookie con el nuevo refresh token
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        secure=False,  # Cambiar a True en producción con HTTPS
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+    )
+
+    return Token(
+        access_token=new_access_token,
+        token_type="bearer",
+        user=UserResponse.from_orm(user)
+    )
+
+
+@router.post("/logout")
+async def logout(response: Response):
+    """
+    Cierra sesión del usuario eliminando el refresh token
+    """
+    response.delete_cookie(key="refresh_token")
+    return {"message": "Sesión cerrada exitosamente"}
