@@ -23,6 +23,7 @@ import {
   CreditCard,
   ArrowRight,
   Sparkles,
+  Shield,
 } from 'lucide-react';
 import { activityTypeLabels } from '@/lib/utils';
 import { Button, Card, Badge } from '@/components/ui';
@@ -128,6 +129,18 @@ export default function DashboardPage() {
                 </span>
                 <span className="text-sm text-primary-600 dark:text-primary-400">créditos</span>
               </div>
+              {user.role === 'admin' && (
+                <Link href="/admin">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    className="!bg-gradient-to-r !from-purple-500 !to-indigo-600 hover:!from-purple-600 hover:!to-indigo-700"
+                  >
+                    <Shield className="w-5 h-5 mr-2" />
+                    Panel Admin
+                  </Button>
+                </Link>
+              )}
               <ThemeToggle />
               <Button
                 onClick={handleLogout}

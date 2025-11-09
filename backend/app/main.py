@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
-from .routers import auth_router, activities_router, content_router, export_router
+from .routers import auth_router, activities_router, content_router, export_router, admin_router
 
 # Crear tablas
 Base.metadata.create_all(bind=engine)
@@ -27,6 +27,7 @@ app.include_router(auth_router)
 app.include_router(activities_router)
 app.include_router(content_router)
 app.include_router(export_router)
+app.include_router(admin_router)
 
 
 @app.get("/")

@@ -161,3 +161,60 @@ export interface WordSearchRequest {
   ai_provider: AIProvider;
   model_name?: string;
 }
+
+// Admin types
+export interface DashboardStats {
+  total_users: number;
+  total_activities: number;
+  total_credits_used: number;
+  active_users_today: number;
+  activities_created_today: number;
+}
+
+export interface UserListItem {
+  id: number;
+  email: string;
+  username: string;
+  full_name?: string;
+  role: UserRole;
+  is_active: boolean;
+  credits: number;
+  created_at: string;
+}
+
+export interface CreditTransaction {
+  id: number;
+  amount: number;
+  type: string;
+  description: string;
+  balance_after: number;
+  created_at: string;
+}
+
+export interface ActivityListItem {
+  id: number;
+  title: string;
+  activity_type: string;
+  creator_id: number;
+  is_public: boolean;
+  credits_used: number;
+  created_at: string;
+}
+
+export interface UserDetail extends UserListItem {
+  recent_activities: ActivityListItem[];
+  recent_transactions: CreditTransaction[];
+}
+
+export interface UserUpdate {
+  email?: string;
+  full_name?: string;
+  role?: UserRole;
+  is_active?: boolean;
+  credits?: number;
+}
+
+export interface CreditAdjustment {
+  amount: number;
+  description: string;
+}
