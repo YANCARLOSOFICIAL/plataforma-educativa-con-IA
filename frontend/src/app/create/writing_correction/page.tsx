@@ -63,17 +63,17 @@ export default function CreateWritingCorrectionPage() {
       title="Corrección de Escritura"
       description="Corrige ortografía, gramática y sintaxis de cualquier texto"
     >
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
               <p className="font-medium">Error</p>
               <p className="text-sm">{error}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Texto a Corregir *
             </label>
             <textarea
@@ -91,15 +91,15 @@ export default function CreateWritingCorrectionPage() {
                   <p className="text-red-600 text-sm">{errors.text.message}</p>
                 )}
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {textLength} caracteres
               </p>
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 mb-2">¿Qué se corregirá?</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
+          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-600 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">¿Qué se corregirá?</h3>
+            <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
               <li>✓ Ortografía y tildes</li>
               <li>✓ Gramática y concordancia</li>
               <li>✓ Sintaxis y estructura</li>

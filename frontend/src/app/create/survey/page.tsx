@@ -69,17 +69,17 @@ export default function CreateSurveyPage() {
       title="Crear Encuesta"
       description="Genera encuestas personalizadas con diferentes tipos de preguntas"
     >
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
               <p className="font-medium">Error</p>
               <p className="text-sm">{error}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Tema de la Encuesta *
             </label>
             <input
@@ -95,7 +95,7 @@ export default function CreateSurveyPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Número de Preguntas
             </label>
             <input
@@ -110,11 +110,11 @@ export default function CreateSurveyPage() {
               min="5"
               max="30"
             />
-            <p className="text-xs text-gray-500 mt-1">Entre 5 y 30 preguntas</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Entre 5 y 30 preguntas</p>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Tipos de Preguntas
             </label>
             <div className="space-y-2">
@@ -126,7 +126,7 @@ export default function CreateSurveyPage() {
                   className="mr-2"
                   defaultChecked
                 />
-                <span className="text-gray-700">Selección Múltiple</span>
+                <span className="text-gray-700 dark:text-gray-300">Selección Múltiple</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -135,7 +135,7 @@ export default function CreateSurveyPage() {
                   value="scale"
                   className="mr-2"
                 />
-                <span className="text-gray-700">Escala (1-5)</span>
+                <span className="text-gray-700 dark:text-gray-300">Escala (1-5)</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -144,7 +144,7 @@ export default function CreateSurveyPage() {
                   value="open"
                   className="mr-2"
                 />
-                <span className="text-gray-700">Respuesta Abierta</span>
+                <span className="text-gray-700 dark:text-gray-300">Respuesta Abierta</span>
               </label>
             </div>
           </div>

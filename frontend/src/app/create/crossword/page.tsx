@@ -69,17 +69,17 @@ export default function CreateCrosswordPage() {
       title="Crear Crucigrama"
       description="Genera crucigramas educativos personalizados para tus estudiantes"
     >
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
               <p className="font-medium">Error</p>
               <p className="text-sm">{error}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Tema del Crucigrama *
             </label>
             <input
@@ -95,7 +95,7 @@ export default function CreateCrosswordPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Número de Palabras
             </label>
             <input
@@ -110,14 +110,14 @@ export default function CreateCrosswordPage() {
               min="5"
               max="20"
             />
-            <p className="text-xs text-gray-500 mt-1">Entre 5 y 20 palabras</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Entre 5 y 20 palabras</p>
             {errors.num_words && (
               <p className="text-red-600 text-sm mt-1">Debe ser entre 5 y 20</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Nivel de Dificultad
             </label>
             <div className="grid grid-cols-3 gap-3">
@@ -129,8 +129,8 @@ export default function CreateCrosswordPage() {
                   className="mr-2"
                 />
                 <div>
-                  <div className="font-semibold text-green-700">Fácil</div>
-                  <div className="text-xs text-gray-500">Palabras cortas</div>
+                  <div className="font-semibold text-green-700 dark:text-green-400">Fácil</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Palabras cortas</div>
                 </div>
               </label>
               <label className="flex items-center p-3 border-2 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
@@ -142,8 +142,8 @@ export default function CreateCrosswordPage() {
                   defaultChecked
                 />
                 <div>
-                  <div className="font-semibold text-yellow-700">Medio</div>
-                  <div className="text-xs text-gray-500">Equilibrado</div>
+                  <div className="font-semibold text-yellow-700 dark:text-yellow-400">Medio</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Equilibrado</div>
                 </div>
               </label>
               <label className="flex items-center p-3 border-2 rounded-lg cursor-pointer hover:border-primary-300 transition-colors">
@@ -154,8 +154,8 @@ export default function CreateCrosswordPage() {
                   className="mr-2"
                 />
                 <div>
-                  <div className="font-semibold text-red-700">Difícil</div>
-                  <div className="text-xs text-gray-500">Palabras largas</div>
+                  <div className="font-semibold text-red-700 dark:text-red-400">Difícil</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Palabras largas</div>
                 </div>
               </label>
             </div>

@@ -90,22 +90,22 @@ export default function CreateStoryPage() {
       title="Crear Cuento/Fábula/Aventura"
       description="Genera historias personalizadas para niños y jóvenes"
     >
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
               <p className="font-medium">Error</p>
               <p className="text-sm">{error}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Tipo de Historia *
             </label>
             <div className="grid grid-cols-3 gap-3">
               <label className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                storyType === 'cuento' ? 'border-primary-500 bg-primary-50' : 'border-gray-200'
+                storyType === 'cuento' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 dark:border-gray-600'
               }`}>
                 <input
                   {...register('story_type')}
@@ -116,7 +116,7 @@ export default function CreateStoryPage() {
                 <div className="font-semibold text-center">Cuento</div>
               </label>
               <label className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                storyType === 'fabula' ? 'border-primary-500 bg-primary-50' : 'border-gray-200'
+                storyType === 'fabula' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 dark:border-gray-600'
               }`}>
                 <input
                   {...register('story_type')}
@@ -127,7 +127,7 @@ export default function CreateStoryPage() {
                 <div className="font-semibold text-center">Fábula</div>
               </label>
               <label className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                storyType === 'aventura' ? 'border-primary-500 bg-primary-50' : 'border-gray-200'
+                storyType === 'aventura' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 dark:border-gray-600'
               }`}>
                 <input
                   {...register('story_type')}
@@ -141,7 +141,7 @@ export default function CreateStoryPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Tema de la Historia *
             </label>
             <input
@@ -157,7 +157,7 @@ export default function CreateStoryPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Personajes *
             </label>
             <div className="space-y-2">
@@ -173,7 +173,7 @@ export default function CreateStoryPage() {
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="btn bg-red-100 text-red-700 hover:bg-red-200 px-3"
+                      className="btn bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 px-3"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -193,7 +193,7 @@ export default function CreateStoryPage() {
 
           {storyType === 'fabula' && (
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 Moraleja (Opcional)
               </label>
               <textarea
@@ -201,7 +201,7 @@ export default function CreateStoryPage() {
                 className="input min-h-[80px]"
                 placeholder="Ej: La honestidad siempre es la mejor política..."
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Déjalo vacío para que la IA genere una moraleja automáticamente
               </p>
             </div>

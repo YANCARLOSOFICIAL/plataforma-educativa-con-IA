@@ -93,10 +93,10 @@ export default function CreateRubricPage() {
       title="Crear Rúbrica de Evaluación"
       description="Genera rúbricas detalladas con criterios y niveles de desempeño"
     >
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
               <p className="font-medium">Error</p>
               <p className="text-sm">{error}</p>
             </div>
@@ -104,7 +104,7 @@ export default function CreateRubricPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 Tema/Actividad *
               </label>
               <input
@@ -120,7 +120,7 @@ export default function CreateRubricPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 Carrera/Materia *
               </label>
               <input
@@ -135,7 +135,7 @@ export default function CreateRubricPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 Semestre/Nivel *
               </label>
               <input
@@ -151,7 +151,7 @@ export default function CreateRubricPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Objetivos de Aprendizaje
             </label>
             <div className="space-y-2">
@@ -167,7 +167,7 @@ export default function CreateRubricPage() {
                     <button
                       type="button"
                       onClick={() => removeObjective(index)}
-                      className="btn bg-red-100 text-red-700 hover:bg-red-200 px-3"
+                      className="btn bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 px-3"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -186,7 +186,7 @@ export default function CreateRubricPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Criterios de Evaluación
             </label>
             <div className="space-y-2">
@@ -202,7 +202,7 @@ export default function CreateRubricPage() {
                     <button
                       type="button"
                       onClick={() => removeCriteria(index)}
-                      className="btn bg-red-100 text-red-700 hover:bg-red-200 px-3"
+                      className="btn bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 px-3"
                     >
                       <X className="w-4 h-4" />
                     </button>

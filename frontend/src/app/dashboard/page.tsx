@@ -266,7 +266,7 @@ export default function DashboardPage() {
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Actividades Recientes</h2>
                 <Badge variant="default">{myActivities.length}</Badge>
               </div>
-              <Link href="/activities" className="text-primary-600 hover:text-primary-700 inline-flex items-center gap-1 group">
+              <Link href="/activities" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 inline-flex items-center gap-1 group">
                 Ver todas
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
@@ -279,21 +279,21 @@ export default function DashboardPage() {
                     key={activity.id}
                     variant="default"
                     padding="md"
-                    className="hover:shadow-lg transition-all border border-gray-200 hover:border-primary-300"
+                    className="hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-500"
                   >
                     <div className="flex items-center gap-4">
                       {Icon && (
-                        <div className="bg-gradient-to-br from-primary-100 to-blue-100 w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                          <Icon className="w-7 h-7 text-primary-600" />
+                        <div className="bg-gradient-to-br from-primary-100 to-blue-100 dark:from-primary-900/40 dark:to-blue-900/40 w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                          <Icon className="w-7 h-7 text-primary-600 dark:text-primary-400" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 mb-1 truncate">{activity.title}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 truncate">{activity.title}</h3>
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="primary" size="sm">
                             {activityTypeLabels[activity.activity_type]}
                           </Badge>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             {new Date(activity.created_at).toLocaleDateString('es-ES', {
                               day: 'numeric',
                               month: 'long',

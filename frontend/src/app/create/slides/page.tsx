@@ -68,17 +68,17 @@ export default function CreateSlidesPage() {
       title="Crear Diapositivas"
       description="Genera contenido para presentaciones de PowerPoint o Google Slides"
     >
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
               <p className="font-medium">Error</p>
               <p className="text-sm">{error}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Tema de la Presentación *
             </label>
             <input
@@ -94,7 +94,7 @@ export default function CreateSlidesPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Número de Diapositivas
             </label>
             <input
@@ -109,14 +109,14 @@ export default function CreateSlidesPage() {
               min="3"
               max="30"
             />
-            <p className="text-xs text-gray-500 mt-1">Entre 3 y 30 diapositivas</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Entre 3 y 30 diapositivas</p>
             {errors.num_slides && (
               <p className="text-red-600 text-sm mt-1">Debe ser entre 3 y 30</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Nivel Académico (Opcional)
             </label>
             <input

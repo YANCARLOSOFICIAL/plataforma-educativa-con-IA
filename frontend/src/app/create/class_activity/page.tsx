@@ -87,17 +87,17 @@ export default function CreateClassActivityPage() {
       title="Crear Actividad de Clase"
       description="Genera actividades de clase completas con objetivos, pasos y materiales"
     >
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
               <p className="font-medium">Error</p>
               <p className="text-sm">{error}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Tema de la Actividad *
             </label>
             <input
@@ -114,7 +114,7 @@ export default function CreateClassActivityPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 Duración (minutos) *
               </label>
               <input
@@ -129,11 +129,11 @@ export default function CreateClassActivityPage() {
                 min="10"
                 max="240"
               />
-              <p className="text-xs text-gray-500 mt-1">Entre 10 y 240 minutos</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Entre 10 y 240 minutos</p>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 Nivel Académico *
               </label>
               <input
@@ -149,7 +149,7 @@ export default function CreateClassActivityPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Objetivos de Aprendizaje
             </label>
             <div className="space-y-2">
@@ -165,7 +165,7 @@ export default function CreateClassActivityPage() {
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="btn bg-red-100 text-red-700 hover:bg-red-200 px-3"
+                      className="btn bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 px-3"
                     >
                       <X className="w-4 h-4" />
                     </button>
