@@ -8,6 +8,7 @@ import { activitiesAPI, exportAPI } from '@/lib/api';
 import Link from 'next/link';
 import { ArrowLeft, Download, Share2 } from 'lucide-react';
 import { activityTypeLabels, aiProviderLabels, downloadFile } from '@/lib/utils';
+import { ActivityContent } from '@/components/ActivityContent';
 
 export default function ActivityDetailPage() {
   const router = useRouter();
@@ -183,14 +184,7 @@ export default function ActivityDetailPage() {
 
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Contenido Generado</h2>
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono overflow-auto max-h-96">
-                  {JSON.stringify(activity.content, null, 2)}
-                </pre>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Nota: Este es el contenido en formato JSON. Usa los botones de exportación para obtener un formato más legible.
-              </p>
+              <ActivityContent activity={activity} />
             </div>
 
             <div className="text-sm text-gray-500 border-t pt-4">
