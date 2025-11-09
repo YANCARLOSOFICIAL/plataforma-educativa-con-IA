@@ -7,6 +7,9 @@ import { authAPI } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { UserRole, type RegisterData } from '@/types';
 import Link from 'next/link';
+import { Button, Input, Card } from '@/components/ui';
+import { toast } from 'sonner';
+import { UserPlus, Sparkles } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,96 +33,86 @@ export default function RegisterPage() {
       const { confirmPassword, ...registerData } = data;
       const response = await authAPI.register(registerData);
       setAuth(response.user, response.access_token);
+      toast.success('¡Cuenta creada exitosamente! Bienvenido a la plataforma');
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error al registrarse');
+      const errorMessage = err.response?.data?.detail || 'Error al registrarse';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-12">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 text-white rounded-full mb-4">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-600 to-blue-600 text-white rounded-2xl mb-4 shadow-lg">
+            <UserPlus className="w-10 h-10" />
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-900">
+          <h2 className="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-blue-600 bg-clip-text text-transparent mb-2">
             Crear Cuenta
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-1">
+            <Sparkles className="w-4 h-4" />
             Únete a la Plataforma Educativa
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
+        <Card variant="elevated" padding="lg" className="backdrop-blur-sm bg-white/95 dark:bg-gray-800/95">
           <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                <p className="font-medium">Error</p>
-                <p>{error}</p>
+              <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
+                <p className="font-semibold text-sm">Error al crear cuenta</p>
+                <p className="text-sm">{error}</p>
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Nombre Completo (Opcional)
-              </label>
-              <input
-                {...register('full_name')}
-                type="text"
-                className="input"
-                placeholder="Juan Pérez"
-              />
-            </div>
+            <Input
+              {...register('full_name')}
+              type="text"
+              label="Nombre Completo"
+              placeholder="Juan Pérez"
+              helperText="Opcional"
+              fullWidth
+            />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Nombre de Usuario
-              </label>
-              <input
-                {...register('username', { required: 'El nombre de usuario es requerido' })}
-                type="text"
-                autoFocus
-                className="input"
-                placeholder="juanperez"
-              />
-              {errors.username && (
-                <p className="text-red-600 text-sm mt-1 font-medium">{errors.username.message}</p>
-              )}
-            </div>
+            <Input
+              {...register('username', { required: 'El nombre de usuario es requerido' })}
+              type="text"
+              label="Nombre de Usuario"
+              placeholder="juanperez"
+              error={errors.username?.message}
+              fullWidth
+              required
+              autoFocus
+            />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Correo Electrónico
-              </label>
-              <input
-                {...register('email', {
-                  required: 'El email es requerido',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Email inválido',
-                  },
-                })}
-                type="email"
-                className="input"
-                placeholder="ejemplo@email.com"
-              />
-              {errors.email && (
-                <p className="text-red-600 text-sm mt-1 font-medium">{errors.email.message}</p>
-              )}
-            </div>
+            <Input
+              {...register('email', {
+                required: 'El email es requerido',
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: 'Email inválido',
+                },
+              })}
+              type="email"
+              label="Correo Electrónico"
+              placeholder="ejemplo@email.com"
+              error={errors.email?.message}
+              fullWidth
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Rol
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="role" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                Rol <span className="text-red-500 ml-1">*</span>
               </label>
               <select
                 {...register('role')}
-                className="input"
+                id="role"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent hover:border-gray-400 dark:hover:border-gray-500 dark:bg-gray-700 dark:text-white"
                 defaultValue={UserRole.DOCENTE}
               >
                 <option value={UserRole.ESTUDIANTE}>Estudiante</option>
@@ -127,73 +120,56 @@ export default function RegisterPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Contraseña
-              </label>
-              <input
-                {...register('password', {
-                  required: 'La contraseña es requerida',
-                  minLength: {
-                    value: 6,
-                    message: 'La contraseña debe tener al menos 6 caracteres',
-                  },
-                })}
-                type="password"
-                className="input"
-                placeholder="Mínimo 6 caracteres"
-              />
-              {errors.password && (
-                <p className="text-red-600 text-sm mt-1 font-medium">{errors.password.message}</p>
-              )}
-            </div>
+            <Input
+              {...register('password', {
+                required: 'La contraseña es requerida',
+                minLength: {
+                  value: 6,
+                  message: 'La contraseña debe tener al menos 6 caracteres',
+                },
+              })}
+              type="password"
+              label="Contraseña"
+              placeholder="Mínimo 6 caracteres"
+              error={errors.password?.message}
+              fullWidth
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Confirmar Contraseña
-              </label>
-              <input
-                {...register('confirmPassword', {
-                  required: 'Confirma tu contraseña',
-                  validate: (value) => value === password || 'Las contraseñas no coinciden',
-                })}
-                type="password"
-                className="input"
-                placeholder="Repite tu contraseña"
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-600 text-sm mt-1 font-medium">{errors.confirmPassword.message}</p>
-              )}
-            </div>
+            <Input
+              {...register('confirmPassword', {
+                required: 'Confirma tu contraseña',
+                validate: (value) => value === password || 'Las contraseñas no coinciden',
+              })}
+              type="password"
+              label="Confirmar Contraseña"
+              placeholder="Repite tu contraseña"
+              error={errors.confirmPassword?.message}
+              fullWidth
+              required
+            />
 
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed py-3 text-base font-semibold mt-6"
+              variant="primary"
+              size="lg"
+              fullWidth
+              isLoading={loading}
+              className="mt-6"
             >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creando cuenta...
-                </span>
-              ) : (
-                'Crear Cuenta'
-              )}
-            </button>
+              {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+            </Button>
 
-            <div className="text-center pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600">
+            <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 ¿Ya tienes cuenta?{' '}
-                <Link href="/login" className="text-primary-600 hover:text-primary-700 font-semibold hover:underline">
+                <Link href="/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold hover:underline transition-colors">
                   Inicia sesión aquí
                 </Link>
               </p>
             </div>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

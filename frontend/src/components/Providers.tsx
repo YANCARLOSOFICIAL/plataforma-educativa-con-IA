@@ -4,6 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { authAPI } from '@/lib/api';
+import { Toaster } from 'sonner';
+import Spinner from './ui/Spinner';
+import { ThemeProvider } from './ThemeProvider';
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, token, isHydrated, clearAuth, setAuth } = useAuthStore();
@@ -102,10 +105,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   // Mostrar loading mientras valida
   if (isValidating) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary-50 to-blue-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando...</p>
+          <Spinner size="xl" />
+          <p className="mt-4 text-gray-600 font-medium">Cargando...</p>
         </div>
       </div>
     );
@@ -118,8 +121,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Toaster
+            position="top-right"
+            richColors
+            closeButton
+            toastOptions={{
+              duration: 4000,
+            }}
+          />
+          {children}
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

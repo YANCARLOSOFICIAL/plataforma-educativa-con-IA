@@ -8,7 +8,10 @@ import { contentAPI } from '@/lib/api';
 import { AIProvider, ExamRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
 import AIProviderSelector from '@/components/AIProviderSelector';
-import { Loader2 } from 'lucide-react';
+import { FileQuestion, CheckCircle2 } from 'lucide-react';
+import { Button, Input, Card } from '@/components/ui';
+import { toast } from 'sonner';
+import PageTransition, { SlideIn } from '@/components/PageTransition';
 
 interface FormData {
   topic: string;
@@ -57,10 +60,14 @@ export default function CreateExamPage() {
         model_name: modelName,
       };
 
+      toast.loading('Generando examen con IA...', { id: 'exam-generation' });
       const activity = await contentAPI.generateExam(request);
+      toast.success('¡Examen generado exitosamente!', { id: 'exam-generation' });
       router.push(`/activity/${activity.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error al generar el examen');
+      const errorMessage = err.response?.data?.detail || 'Error al generar el examen';
+      setError(errorMessage);
+      toast.error(errorMessage, { id: 'exam-generation' });
       setLoading(false);
     }
   };
@@ -68,130 +75,121 @@ export default function CreateExamPage() {
   if (!user) return null;
 
   return (
-    <FormLayout
-      title="Crear Examen"
-      description="Genera exámenes automáticamente con preguntas de verdadero/falso, selección múltiple y respuesta corta"
-    >
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              <p className="font-medium">Error</p>
-              <p className="text-sm">{error}</p>
+    <PageTransition>
+      <FormLayout
+        title="Crear Examen"
+        description="Genera exámenes automáticamente con preguntas de verdadero/falso, selección múltiple y respuesta corta"
+      >
+        <SlideIn direction="up">
+          <Card variant="elevated" padding="lg">
+            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
+              <div className="bg-gradient-to-br from-primary-500 to-blue-600 p-3 rounded-xl shadow-md">
+                <FileQuestion className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Configuración del Examen</h3>
+                <p className="text-sm text-gray-600">Completa los campos para generar tu examen</p>
+              </div>
             </div>
-          )}
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Tema del Examen *
-            </label>
-            <input
-              {...register('topic', { required: 'El tema es requerido' })}
-              type="text"
-              className="input"
-              placeholder="Ej: Historia de México, Matemáticas Álgebra, Biología Celular..."
-              autoFocus
-            />
-            {errors.topic && (
-              <p className="text-red-600 text-sm mt-1">{errors.topic.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Número de Preguntas
-            </label>
-            <input
-              {...register('num_questions', {
-                required: true,
-                min: 1,
-                max: 50,
-                valueAsNumber: true,
-              })}
-              type="number"
-              className="input"
-              min="1"
-              max="50"
-            />
-            <p className="text-xs text-gray-500 mt-1">Entre 1 y 50 preguntas</p>
-            {errors.num_questions && (
-              <p className="text-red-600 text-sm mt-1">Debe ser entre 1 y 50</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Tipos de Preguntas
-            </label>
-            <div className="space-y-2">
-              <label className="flex items-center">
-                <input
-                  {...register('question_types')}
-                  type="checkbox"
-                  value="multiple_choice"
-                  className="mr-2"
-                  defaultChecked
-                />
-                <span className="text-gray-700">Selección Múltiple</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  {...register('question_types')}
-                  type="checkbox"
-                  value="true_false"
-                  className="mr-2"
-                />
-                <span className="text-gray-700">Verdadero/Falso</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  {...register('question_types')}
-                  type="checkbox"
-                  value="short_answer"
-                  className="mr-2"
-                />
-                <span className="text-gray-700">Respuesta Corta</span>
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Nivel Académico (Opcional)
-            </label>
-            <input
-              {...register('grade_level')}
-              type="text"
-              className="input"
-              placeholder="Ej: Secundaria, Preparatoria, Universidad..."
-            />
-          </div>
-
-          <AIProviderSelector
-            value={aiProvider}
-            onChange={setAiProvider}
-            modelName={modelName}
-            onModelChange={setModelName}
-          />
-
-          <div className="flex gap-3 pt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed py-3 text-base font-semibold"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5" />
-                  Generando Examen...
-                </span>
-              ) : (
-                'Generar Examen con IA'
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {error && (
+                <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg">
+                  <p className="font-semibold text-sm">Error al generar</p>
+                  <p className="text-sm">{error}</p>
+                </div>
               )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </FormLayout>
+
+              <Input
+                {...register('topic', { required: 'El tema es requerido' })}
+                label="Tema del Examen"
+                placeholder="Ej: Historia de México, Matemáticas Álgebra, Biología Celular..."
+                error={errors.topic?.message}
+                fullWidth
+                required
+                autoFocus
+              />
+
+              <Input
+                {...register('num_questions', {
+                  required: true,
+                  min: 1,
+                  max: 50,
+                  valueAsNumber: true,
+                })}
+                type="number"
+                label="Número de Preguntas"
+                placeholder="10"
+                helperText="Entre 1 y 50 preguntas"
+                error={errors.num_questions && 'Debe ser entre 1 y 50'}
+                fullWidth
+                required
+                min="1"
+                max="50"
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Tipos de Preguntas <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-3">
+                  {[
+                    { value: 'multiple_choice', label: 'Selección Múltiple', defaultChecked: true },
+                    { value: 'true_false', label: 'Verdadero/Falso', defaultChecked: false },
+                    { value: 'short_answer', label: 'Respuesta Corta', defaultChecked: false },
+                  ].map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex items-center p-3 border-2 border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all cursor-pointer group"
+                    >
+                      <input
+                        {...register('question_types')}
+                        type="checkbox"
+                        value={option.value}
+                        defaultChecked={option.defaultChecked}
+                        className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 mr-3"
+                      />
+                      <div className="flex items-center gap-2 flex-1">
+                        <CheckCircle2 className="w-5 h-5 text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <span className="text-gray-900 font-medium">{option.label}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <Input
+                {...register('grade_level')}
+                label="Nivel Académico"
+                placeholder="Ej: Secundaria, Preparatoria, Universidad..."
+                helperText="Opcional"
+                fullWidth
+              />
+
+              <div className="pt-4 border-t border-gray-200">
+                <AIProviderSelector
+                  value={aiProvider}
+                  onChange={setAiProvider}
+                  modelName={modelName}
+                  onModelChange={setModelName}
+                />
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  isLoading={loading}
+                >
+                  {loading ? 'Generando Examen...' : 'Generar Examen con IA'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </SlideIn>
+      </FormLayout>
+    </PageTransition>
   );
 }
