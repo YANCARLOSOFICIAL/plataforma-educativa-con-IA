@@ -22,7 +22,7 @@ export default function CreateSurveyPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
-  const [modelName, setModelName] = useState('qwen2.5vl:latest');
+  const [modelName, setModelName] = useState('qwen3:4b');
 
   const {
     register,

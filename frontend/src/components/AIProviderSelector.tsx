@@ -11,11 +11,11 @@ interface AIProviderSelectorProps {
 }
 
 const ollamaModels = [
-  'qwen2.5vl:latest',
-  'qwen3:4b',
-  'deepseek-r1:8b',
-  'llama2:7b-chat',
-  'llama3:8b',
+  'qwen3:4b',              // Más rápido, recomendado
+  'llama2:7b-chat',        // Rápido y eficiente
+  'deepseek-r1:8b',        // Balance velocidad/calidad
+  'llama3:8b',             // Buen balance
+  'qwen2.5vl:latest',      // Más pesado, solo para hardware potente
 ];
 
 const openaiModels = [

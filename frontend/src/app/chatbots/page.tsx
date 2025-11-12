@@ -1,10 +1,15 @@
 'use client';
 
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/DashboardLayout';
+import ChatbotCreateModal from '@/components/ChatbotCreateModal';
 import { Card, Button, Badge } from '@/components/ui';
-import { Bot, Plus, MessageSquare, Brain, BookOpen, Code, Heart, Calculator, Globe, Sparkles } from 'lucide-react';
+import { Bot, Plus, MessageSquare, Brain, BookOpen, Code, Heart, Calculator, Globe, Sparkles, Trash2, Edit, Power } from 'lucide-react';
 import Link from 'next/link';
 import PageTransition, { FadeIn, SlideIn } from '@/components/PageTransition';
+import { chatbotAPI } from '@/lib/api';
+import type { Chatbot } from '@/types';
 
 const chatbotTemplates = [
   {
@@ -58,10 +63,62 @@ const chatbotTemplates = [
 ];
 
 export default function ChatbotsPage() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [templateData, setTemplateData] = useState<any>(null);
+
+  // Fetch user's chatbots
+  const { data: myChatbots, refetch } = useQuery({
+    queryKey: ['my-chatbots'],
+    queryFn: chatbotAPI.getMyChatbots,
+  });
+
+  // Fetch templates
+  const { data: templates } = useQuery({
+    queryKey: ['chatbot-templates'],
+    queryFn: chatbotAPI.getTemplates,
+  });
+
+  const handleOpenModal = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    if (templates && templates[templateId]) {
+      setTemplateData(templates[templateId]);
+    }
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedTemplate(null);
+    setTemplateData(null);
+  };
+
+  const handleSuccess = () => {
+    refetch();
+  };
+
+  const handleDeleteChatbot = async (id: number) => {
+    if (confirm('¿Estás seguro de eliminar este chatbot?')) {
+      try {
+        await chatbotAPI.delete(id);
+        refetch();
+      } catch (error) {
+        alert('Error al eliminar el chatbot');
+      }
+    }
+  };
+
   return (
     <DashboardLayout>
       <PageTransition>
         <div className="space-y-8">
+          <ChatbotCreateModal
+            isOpen={modalOpen}
+            onClose={handleCloseModal}
+            onSuccess={handleSuccess}
+            templateId={selectedTemplate || undefined}
+            templateData={templateData}
+          />
           {/* Header */}
           <FadeIn delay={0.1}>
             <div className="flex items-center justify-between">
@@ -155,13 +212,11 @@ export default function ChatbotsPage() {
                           <Button
                             variant="primary"
                             size="sm"
+                            onClick={() => handleOpenModal(template.id)}
                             className="flex-1 !bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700"
                           >
                             <Plus className="w-4 h-4 mr-1" />
                             Crear
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <MessageSquare className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
@@ -189,6 +244,7 @@ export default function ChatbotsPage() {
                 <Button
                   variant="primary"
                   size="lg"
+                  onClick={() => handleOpenModal('custom')}
                   className="!bg-gradient-to-r !from-primary-600 !via-purple-600 !to-pink-600 hover:!from-primary-700 hover:!via-purple-700 hover:!to-pink-700 shadow-xl"
                 >
                   <Plus className="w-5 h-5 mr-2" />
@@ -205,15 +261,89 @@ export default function ChatbotsPage() {
                 <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 Mis Chatbots
               </h2>
-              <Card variant="glass" padding="lg" className="text-center">
-                <Bot className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                  Aún no has creado ningún chatbot
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Selecciona una plantilla arriba para comenzar
-                </p>
-              </Card>
+              {!myChatbots || myChatbots.length === 0 ? (
+                <Card variant="glass" padding="lg" className="text-center">
+                  <Bot className="w-20 h-20 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    Aún no has creado ningún chatbot
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Selecciona una plantilla arriba para comenzar
+                  </p>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {myChatbots.map((chatbot: Chatbot) => {
+                    const template = chatbotTemplates.find((t) => t.id === chatbot.chatbot_type);
+                    const Icon = template?.icon || Bot;
+                    const color = template?.color || 'from-gray-500 to-gray-600';
+
+                    return (
+                      <Card key={chatbot.id} variant="glass" padding="lg" hover className="group relative">
+                        {/* Icon */}
+                        <div className={`inline-flex p-4 bg-gradient-to-br ${color} rounded-2xl shadow-lg mb-4 group-hover:scale-110 transition-transform`}>
+                          <Icon className="w-8 h-8 text-white" />
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="absolute top-4 right-4">
+                          <Badge variant={chatbot.is_active ? 'success' : 'warning'} size="sm">
+                            {chatbot.is_active ? 'Activo' : 'Inactivo'}
+                          </Badge>
+                        </div>
+
+                        {/* Content */}
+                        <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2">
+                          {chatbot.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                          {chatbot.description || 'Sin descripción'}
+                        </p>
+
+                        {/* Knowledge Areas */}
+                        {chatbot.knowledge_areas && chatbot.knowledge_areas.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {chatbot.knowledge_areas.slice(0, 3).map((area) => (
+                              <span
+                                key={area}
+                                className="text-xs px-2 py-1 rounded-full bg-white/50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 font-medium"
+                              >
+                                {area}
+                              </span>
+                            ))}
+                            {chatbot.knowledge_areas.length > 3 && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-white/50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 font-medium">
+                                +{chatbot.knowledge_areas.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Link href={`/chatbots/${chatbot.id}/chat`} className="flex-1">
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              className="w-full !bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700"
+                            >
+                              <MessageSquare className="w-4 h-4 mr-1" />
+                              Chatear
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteChatbot(chatbot.id)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </SlideIn>
         </div>

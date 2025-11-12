@@ -28,3 +28,5 @@ class User(Base):
     # Relationships
     activities = relationship("Activity", back_populates="creator")
     credit_transactions = relationship("CreditTransaction", back_populates="user")
+    chatbots = relationship("Chatbot", back_populates="creator")
+    chat_conversations = relationship("ChatConversation", back_populates="user")

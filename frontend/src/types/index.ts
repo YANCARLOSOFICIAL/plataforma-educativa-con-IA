@@ -25,6 +25,16 @@ export enum AIProvider {
   GEMINI = 'gemini',
 }
 
+export enum ChatbotType {
+  MATH = 'math',
+  LANGUAGE = 'language',
+  SCIENCE = 'science',
+  LITERATURE = 'literature',
+  PROGRAMMING = 'programming',
+  WELLNESS = 'wellness',
+  CUSTOM = 'custom',
+}
+
 export interface User {
   id: number;
   email: string;
@@ -217,4 +227,77 @@ export interface UserUpdate {
 export interface CreditAdjustment {
   amount: number;
   description: string;
+}
+
+// Chatbot types
+export interface Chatbot {
+  id: number;
+  name: string;
+  description?: string;
+  chatbot_type: ChatbotType;
+  personality?: string;
+  knowledge_areas?: string[];
+  instruction_prompt?: string;
+  ai_provider: string;
+  model_name: string;
+  temperature: number;
+  is_public: boolean;
+  is_active: boolean;
+  creator_id: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ChatbotCreate {
+  name: string;
+  description?: string;
+  chatbot_type: ChatbotType;
+  personality?: string;
+  knowledge_areas?: string[];
+  instruction_prompt?: string;
+  ai_provider?: string;
+  model_name?: string;
+  temperature?: number;
+  is_public?: boolean;
+}
+
+export interface ChatbotUpdate {
+  name?: string;
+  description?: string;
+  personality?: string;
+  knowledge_areas?: string[];
+  instruction_prompt?: string;
+  ai_provider?: string;
+  model_name?: string;
+  temperature?: number;
+  is_active?: boolean;
+  is_public?: boolean;
+}
+
+export interface ChatMessage {
+  id: number;
+  content: string;
+  role: 'user' | 'assistant';
+  created_at: string;
+}
+
+export interface ChatConversation {
+  id: number;
+  title?: string;
+  chatbot_id: number;
+  user_id: number;
+  created_at: string;
+  updated_at?: string;
+  messages: ChatMessage[];
+}
+
+export interface ChatRequest {
+  message: string;
+  conversation_id?: number;
+}
+
+export interface ChatResponse {
+  message: string;
+  conversation_id: number;
+  chatbot_id: number;
 }
