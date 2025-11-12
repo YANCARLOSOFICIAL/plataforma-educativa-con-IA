@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminAPI } from '@/lib/api';
 import { Card, Button, Input, Badge } from '@/components/ui';
+import DashboardLayout from '@/components/DashboardLayout';
 import Spinner from '@/components/ui/Spinner';
 import PageTransition, { FadeIn } from '@/components/PageTransition';
-import { Search, Edit, Trash2, Plus, Minus, X } from 'lucide-react';
+import { Search, Edit, Trash2, Plus, Minus, X, Users } from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast } from 'sonner';
 import type { UserListItem, UserUpdate, CreditAdjustment, UserRole } from '@/types';
@@ -118,19 +119,28 @@ export default function UsersManagementPage() {
   }
 
   return (
-    <PageTransition>
-      <div className="space-y-6">
-        <FadeIn delay={0.1}>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Gestión de Usuarios</h1>
-              <p className="text-gray-600 dark:text-gray-400">Administra todos los usuarios de la plataforma</p>
+    <DashboardLayout>
+      <PageTransition>
+        <div className="space-y-6">
+          {/* Header */}
+          <FadeIn delay={0.1}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-lg">
+                <Users className="w-7 h-7 text-white" />
+              </div>
+              <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-cyan-400 dark:to-blue-400">
+                Gestión de Usuarios
+              </h1>
+              {!isLoading && users && (
+                <Badge className="!bg-gradient-to-r !from-blue-600 !to-cyan-600 !text-white shadow-lg text-lg px-4 py-2">
+                  {users.length}
+                </Badge>
+              )}
             </div>
-            <Badge variant="primary" size="lg">
-              {users?.length || 0} usuarios
-            </Badge>
-          </div>
-        </FadeIn>
+            <p className="text-gray-600 dark:text-gray-400 text-lg ml-16">
+              Administra usuarios, roles y créditos del sistema
+            </p>
+          </FadeIn>
 
         <FadeIn delay={0.2}>
           <Card padding="md">
@@ -453,6 +463,7 @@ export default function UsersManagementPage() {
           </Card>
         </div>
       )}
-    </PageTransition>
+      </PageTransition>
+    </DashboardLayout>
   );
 }

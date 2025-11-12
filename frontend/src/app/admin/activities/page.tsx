@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminAPI } from '@/lib/api';
 import { Card, Button, Badge } from '@/components/ui';
+import DashboardLayout from '@/components/DashboardLayout';
 import Spinner from '@/components/ui/Spinner';
 import PageTransition, { FadeIn } from '@/components/PageTransition';
-import { Eye, Trash2, Filter } from 'lucide-react';
+import { Eye, Trash2, Filter, FileText } from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -68,19 +69,27 @@ export default function ActivitiesManagementPage() {
   }
 
   return (
-    <PageTransition>
-      <div className="space-y-6">
-        <FadeIn delay={0.1}>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Gestión de Actividades</h1>
-              <p className="text-gray-600 dark:text-gray-400">Administra todas las actividades creadas</p>
+    <DashboardLayout>
+      <PageTransition>
+        <div className="space-y-6">
+          <FadeIn delay={0.1}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
+                <FileText className="w-7 h-7 text-white" />
+              </div>
+              <h1 className="text-4xl font-extrabold bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 bg-clip-text text-transparent dark:from-green-400 dark:via-emerald-400 dark:to-green-400">
+                Gestión de Actividades
+              </h1>
+              {!isLoading && activities && (
+                <Badge className="!bg-gradient-to-r !from-green-600 !to-emerald-600 !text-white shadow-lg text-lg px-4 py-2">
+                  {activities.length}
+                </Badge>
+              )}
             </div>
-            <Badge variant="primary" size="lg">
-              {activities?.length || 0} actividades
-            </Badge>
-          </div>
-        </FadeIn>
+            <p className="text-gray-600 dark:text-gray-400 text-lg ml-16">
+              Administra y modera todas las actividades del sistema
+            </p>
+          </FadeIn>
 
         <FadeIn delay={0.2}>
           <Card padding="md">
@@ -233,7 +242,8 @@ export default function ActivitiesManagementPage() {
             </Card>
           </div>
         </FadeIn>
-      </div>
-    </PageTransition>
+        </div>
+      </PageTransition>
+    </DashboardLayout>
   );
 }

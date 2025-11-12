@@ -45,22 +45,26 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-12">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center mesh-bg px-4 py-12 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 right-10 w-72 h-72 bg-purple-400/30 rounded-full filter blur-3xl animate-float" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-400/30 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+
+      <div className="max-w-md w-full relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-600 to-blue-600 text-white rounded-2xl mb-4 shadow-lg">
-            <UserPlus className="w-10 h-10" />
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-primary-600 via-blue-600 to-purple-600 text-white rounded-3xl mb-6 shadow-2xl animate-float">
+            <UserPlus className="w-12 h-12" />
           </div>
-          <h2 className="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-blue-600 bg-clip-text text-transparent mb-2">
+          <h2 className="text-5xl font-extrabold bg-gradient-to-r from-primary-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 dark:from-primary-400 dark:via-blue-400 dark:to-purple-400">
             Crear Cuenta
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-1">
-            <Sparkles className="w-4 h-4" />
+          <p className="text-gray-700 dark:text-gray-300 flex items-center justify-center gap-2 text-lg font-medium">
+            <Sparkles className="w-5 h-5 text-primary-500" />
             Únete a la Plataforma Educativa
           </p>
         </div>
 
-        <Card variant="elevated" padding="lg" className="backdrop-blur-sm bg-white/95 dark:bg-gray-800/95">
+        <Card variant="glass" padding="lg" className="shadow-2xl">
           <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
             {error && (
               <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">

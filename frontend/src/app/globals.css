@@ -7,6 +7,11 @@
   --background-rgb: 249, 250, 251;
 }
 
+.dark {
+  --foreground-rgb: 249, 250, 251;
+  --background-rgb: 17, 24, 39;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
@@ -14,24 +19,87 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Animated Background Gradient */
+.animated-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+.dark .animated-bg {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #1e3a8a 75%, #1e1b4b 100%);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+/* Glassmorphism utility classes */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(17, 24, 39, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-strong {
+  background: rgba(17, 24, 39, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Mesh gradient background pattern */
+.mesh-bg {
+  background-color: #f0f9ff;
+  background-image:
+    radial-gradient(at 47% 33%, hsl(210, 100%, 90%) 0px, transparent 50%),
+    radial-gradient(at 82% 65%, hsl(240, 100%, 95%) 0px, transparent 50%),
+    radial-gradient(at 25% 75%, hsl(260, 100%, 92%) 0px, transparent 50%),
+    radial-gradient(at 90% 10%, hsl(200, 100%, 88%) 0px, transparent 50%),
+    radial-gradient(at 10% 90%, hsl(280, 100%, 93%) 0px, transparent 50%);
+}
+
+.dark .mesh-bg {
+  background-color: #0f172a;
+  background-image:
+    radial-gradient(at 47% 33%, hsl(210, 100%, 15%) 0px, transparent 50%),
+    radial-gradient(at 82% 65%, hsl(240, 100%, 12%) 0px, transparent 50%),
+    radial-gradient(at 25% 75%, hsl(260, 100%, 14%) 0px, transparent 50%),
+    radial-gradient(at 90% 10%, hsl(200, 100%, 16%) 0px, transparent 50%),
+    radial-gradient(at 10% 90%, hsl(280, 100%, 13%) 0px, transparent 50%);
+}
+
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105;
   }
 
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700;
+    @apply bg-gradient-to-r from-primary-600 to-primary-500 text-white hover:from-primary-700 hover:to-primary-600 shadow-lg hover:shadow-xl;
   }
 
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
   }
 
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-gray-900 placeholder:text-gray-400;
+    @apply w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-all duration-300;
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-md p-6;
+    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-soft-lg p-6 transition-all duration-300 hover:shadow-xl;
+  }
+
+  .card-glass {
+    @apply backdrop-blur-xl bg-white/70 dark:bg-gray-800/70 border border-white/20 dark:border-gray-700/50 rounded-2xl shadow-glass p-6 transition-all duration-300 hover:shadow-glass-lg;
   }
 }

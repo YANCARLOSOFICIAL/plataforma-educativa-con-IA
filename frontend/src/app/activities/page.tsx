@@ -1,32 +1,20 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store';
 import { useQuery } from '@tanstack/react-query';
 import { activitiesAPI, exportAPI } from '@/lib/api';
 import Link from 'next/link';
-import { Download, Eye, Trash2, ArrowLeft, FileText, Calendar, BookOpen } from 'lucide-react';
+import { Download, Eye, Trash2, FileText, Calendar, BookOpen, Plus } from 'lucide-react';
 import { activityTypeLabels, aiProviderLabels, downloadFile } from '@/lib/utils';
 import { Button, Card, Badge } from '@/components/ui';
-import { ActivityCardSkeleton } from '@/components/ui/LoadingSkeleton';
+import DashboardLayout from '@/components/DashboardLayout';
 import { toast } from 'sonner';
 import PageTransition, { SlideIn, FadeIn } from '@/components/PageTransition';
 
 export default function ActivitiesPage() {
-  const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-
   const { data: activities, isLoading, refetch } = useQuery({
     queryKey: ['my-activities'],
     queryFn: () => activitiesAPI.getMy(),
   });
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-    }
-  }, [user, router]);
 
   const handleExportWord = async (activityId: number, title: string) => {
     const toastId = toast.loading('Exportando a Word...');
@@ -78,56 +66,69 @@ export default function ActivitiesPage() {
     }
   };
 
-  if (!user) return null;
-
   return (
-    <PageTransition>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <SlideIn direction="right">
-            <div className="mb-8">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4 group"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-            Volver al Dashboard
-          </Link>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="bg-gradient-to-br from-primary-500 to-blue-600 p-2 rounded-lg">
-              <FileText className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-blue-600 bg-clip-text text-transparent">
-              Mis Actividades
-            </h1>
-            {!isLoading && activities && (
-              <Badge variant="primary" size="lg">{activities.length}</Badge>
-            )}
-          </div>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
-            Gestiona todas tus actividades creadas
-          </p>
-        </div>
-      </SlideIn>
-
-        {isLoading ? (
-          <FadeIn>
-            <div className="grid gap-4">
-              {[1, 2, 3].map((i) => (
-                <ActivityCardSkeleton key={i} />
-              ))}
+    <DashboardLayout>
+      <PageTransition>
+        <div className="space-y-8">
+          {/* Header */}
+          <FadeIn delay={0.1}>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-3 bg-gradient-to-br from-primary-500 to-blue-600 rounded-2xl shadow-lg">
+                    <FileText className="w-7 h-7 text-white" />
+                  </div>
+                  <h1 className="text-4xl font-extrabold bg-gradient-to-r from-primary-600 via-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-primary-400 dark:via-blue-400 dark:to-purple-400">
+                    Mis Actividades
+                  </h1>
+                  {!isLoading && activities && (
+                    <Badge className="!bg-gradient-to-r !from-primary-600 !to-blue-600 !text-white shadow-lg text-lg px-4 py-2">
+                      {activities.length}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 text-lg ml-16">
+                  Gestiona y exporta todas tus actividades creadas
+                </p>
+              </div>
+              <Link href="/create">
+                <Button variant="primary" size="lg">
+                  <Plus className="w-5 h-5 mr-2" />
+                  Nueva Actividad
+                </Button>
+              </Link>
             </div>
           </FadeIn>
-        ) : activities && activities.length > 0 ? (
-            <FadeIn delay={0.2}>
+
+          {/* Activities List */}
+          {isLoading ? (
+            <FadeIn delay={0.15}>
               <div className="grid gap-4">
-            {activities.map((activity) => (
-              <Card
-                key={activity.id}
-                variant="elevated"
-                padding="lg"
-                className="hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-500"
-              >
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} variant="glass" padding="lg" className="animate-pulse">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 bg-gray-300 dark:bg-gray-700 rounded-xl" />
+                      <div className="flex-1">
+                        <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-2/3 mb-3" />
+                        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2 mb-2" />
+                        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/3" />
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </FadeIn>
+          ) : activities && activities.length > 0 ? (
+            <FadeIn delay={0.2}>
+              <div className="grid gap-5">
+                {activities.map((activity) => (
+                  <Card
+                    key={activity.id}
+                    variant="glass"
+                    padding="lg"
+                    hover
+                    className="group"
+                  >
                 <div className="flex items-start justify-between gap-6">
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
@@ -230,22 +231,27 @@ export default function ActivitiesPage() {
           </FadeIn>
           ) : (
             <FadeIn delay={0.2}>
-              <Card variant="elevated" padding="lg" className="text-center py-12">
-            <div className="max-w-md mx-auto">
-              <FileText className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">No tienes actividades creadas</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">Comienza creando tu primera actividad educativa</p>
-              <Link href="/dashboard">
-                <Button variant="primary" size="lg">
-                  Crear Primera Actividad
-                </Button>
-                </Link>
-              </div>
-            </Card>
-          </FadeIn>
+              <Card variant="glass" padding="lg" className="text-center py-16">
+                <div className="max-w-md mx-auto">
+                  <FileText className="w-20 h-20 text-gray-400 mx-auto mb-6" />
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                    No tienes actividades creadas
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg">
+                    Comienza creando tu primera actividad educativa con IA
+                  </p>
+                  <Link href="/create">
+                    <Button variant="primary" size="lg">
+                      <Plus className="w-5 h-5 mr-2" />
+                      Crear Primera Actividad
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            </FadeIn>
           )}
         </div>
-      </div>
-    </PageTransition>
+      </PageTransition>
+    </DashboardLayout>
   );
 }

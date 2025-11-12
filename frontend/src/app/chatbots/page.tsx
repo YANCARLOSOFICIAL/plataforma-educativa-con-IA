@@ -1,0 +1,223 @@
+'use client';
+
+import DashboardLayout from '@/components/DashboardLayout';
+import { Card, Button, Badge } from '@/components/ui';
+import { Bot, Plus, MessageSquare, Brain, BookOpen, Code, Heart, Calculator, Globe, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import PageTransition, { FadeIn, SlideIn } from '@/components/PageTransition';
+
+const chatbotTemplates = [
+  {
+    id: 'math',
+    name: 'Tutor de Matemáticas',
+    description: 'Asistente especializado en resolver problemas matemáticos y explicar conceptos',
+    icon: Calculator,
+    color: 'from-blue-500 to-cyan-600',
+    subjects: ['Álgebra', 'Geometría', 'Cálculo'],
+  },
+  {
+    id: 'language',
+    name: 'Profesor de Idiomas',
+    description: 'Ayuda con gramática, vocabulario y práctica conversacional',
+    icon: Globe,
+    color: 'from-green-500 to-emerald-600',
+    subjects: ['Inglés', 'Español', 'Francés'],
+  },
+  {
+    id: 'science',
+    name: 'Tutor de Ciencias',
+    description: 'Explica conceptos de física, química y biología de manera simple',
+    icon: Brain,
+    color: 'from-purple-500 to-pink-600',
+    subjects: ['Física', 'Química', 'Biología'],
+  },
+  {
+    id: 'literature',
+    name: 'Guía Literario',
+    description: 'Análisis de textos, comprensión lectora y escritura creativa',
+    icon: BookOpen,
+    color: 'from-orange-500 to-red-600',
+    subjects: ['Literatura', 'Redacción', 'Poesía'],
+  },
+  {
+    id: 'programming',
+    name: 'Mentor de Programación',
+    description: 'Enseña conceptos de programación y ayuda a resolver errores de código',
+    icon: Code,
+    color: 'from-indigo-500 to-blue-600',
+    subjects: ['Python', 'JavaScript', 'HTML/CSS'],
+  },
+  {
+    id: 'wellness',
+    name: 'Coach de Bienestar',
+    description: 'Apoyo emocional, técnicas de estudio y manejo del estrés',
+    icon: Heart,
+    color: 'from-pink-500 to-rose-600',
+    subjects: ['Mindfulness', 'Motivación', 'Organización'],
+  },
+];
+
+export default function ChatbotsPage() {
+  return (
+    <DashboardLayout>
+      <PageTransition>
+        <div className="space-y-8">
+          {/* Header */}
+          <FadeIn delay={0.1}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-pink-400 dark:to-purple-400 mb-2">
+                  Chatbots IA
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">
+                  Asistentes virtuales especializados para diferentes áreas educativas
+                </p>
+              </div>
+              <Badge className="!bg-gradient-to-r !from-accent-500 !to-pink-600 !text-white shadow-lg text-lg px-4 py-2">
+                Nuevo
+              </Badge>
+            </div>
+          </FadeIn>
+
+          {/* Info Card */}
+          <SlideIn direction="up" delay={0.15}>
+            <Card variant="glass" padding="lg" className="border-2 border-purple-300/50 dark:border-purple-500/30">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2">
+                    ¿Qué son los Chatbots IA?
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Son asistentes virtuales personalizados y especializados en diferentes áreas educativas.
+                    Cada chatbot está entrenado para ayudarte de manera específica según tus necesidades.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="primary" size="sm">Disponible 24/7</Badge>
+                    <Badge variant="success" size="sm">Respuestas instantáneas</Badge>
+                    <Badge variant="info" size="sm">Múltiples materias</Badge>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </SlideIn>
+
+          {/* Templates Grid */}
+          <SlideIn direction="up" delay={0.2}>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                <Bot className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                Plantillas Disponibles
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {chatbotTemplates.map((template, index) => {
+                  const Icon = template.icon;
+                  return (
+                    <Card
+                      key={template.id}
+                      variant="glass"
+                      padding="lg"
+                      hover
+                      className="group relative overflow-hidden"
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-br ${template.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+
+                      <div className="relative">
+                        {/* Icon */}
+                        <div className={`inline-flex p-4 bg-gradient-to-br ${template.color} rounded-2xl shadow-lg mb-4 group-hover:scale-110 transition-transform`}>
+                          <Icon className="w-8 h-8 text-white" />
+                        </div>
+
+                        {/* Content */}
+                        <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                          {template.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                          {template.description}
+                        </p>
+
+                        {/* Subjects */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {template.subjects.map((subject) => (
+                            <span
+                              key={subject}
+                              className="text-xs px-2 py-1 rounded-full bg-white/50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 font-medium"
+                            >
+                              {subject}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="flex-1 !bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700"
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Crear
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <MessageSquare className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </SlideIn>
+
+          {/* Custom Chatbot */}
+          <SlideIn direction="up" delay={0.3}>
+            <Card variant="gradient" padding="lg" className="border-0 shadow-2xl">
+              <div className="text-center">
+                <div className="inline-flex p-5 bg-gradient-to-br from-primary-500 via-purple-600 to-pink-600 rounded-3xl shadow-2xl mb-6 animate-float">
+                  <Bot className="w-12 h-12 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                  ¿Necesitas algo más específico?
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 text-lg mb-6 max-w-2xl mx-auto">
+                  Crea un chatbot personalizado con tus propias especificaciones,
+                  personalidad y conocimientos específicos para tus necesidades.
+                </p>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="!bg-gradient-to-r !from-primary-600 !via-purple-600 !to-pink-600 hover:!from-primary-700 hover:!via-purple-700 hover:!to-pink-700 shadow-xl"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Crear Chatbot Personalizado
+                </Button>
+              </div>
+            </Card>
+          </SlideIn>
+
+          {/* My Chatbots Section */}
+          <SlideIn direction="up" delay={0.4}>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                Mis Chatbots
+              </h2>
+              <Card variant="glass" padding="lg" className="text-center">
+                <Bot className="w-20 h-20 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                  Aún no has creado ningún chatbot
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Selecciona una plantilla arriba para comenzar
+                </p>
+              </Card>
+            </div>
+          </SlideIn>
+        </div>
+      </PageTransition>
+    </DashboardLayout>
+  );
+}
