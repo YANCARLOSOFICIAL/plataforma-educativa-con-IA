@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminAPI } from '@/lib/api';
 import { Card, Button, Badge } from '@/components/ui';
-import DashboardLayout from '@/components/DashboardLayout';
 import Spinner from '@/components/ui/Spinner';
 import PageTransition, { FadeIn } from '@/components/PageTransition';
 import { Eye, Trash2, Filter, FileText } from 'lucide-react';
@@ -69,9 +68,8 @@ export default function ActivitiesManagementPage() {
   }
 
   return (
-    <DashboardLayout>
-      <PageTransition>
-        <div className="space-y-6">
+    <PageTransition>
+      <div className="space-y-6">
           <FadeIn delay={0.1}>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
@@ -242,8 +240,7 @@ export default function ActivitiesManagementPage() {
             </Card>
           </div>
         </FadeIn>
-        </div>
-      </PageTransition>
-    </DashboardLayout>
+      </div>
+    </PageTransition>
   );
 }

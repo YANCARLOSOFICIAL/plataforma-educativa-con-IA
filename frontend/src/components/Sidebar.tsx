@@ -37,14 +37,38 @@ export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const navigationItems: NavItem[] = [
-    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { label: 'Mis Actividades', href: '/activities', icon: FileText },
-    { label: 'Crear Contenido', href: '/create', icon: PlusCircle },
-    { label: 'Chatbots IA', href: '/chatbots', icon: Bot, badge: 'Nuevo' },
-    { label: 'Comunidad', href: '/community', icon: Users },
-    { label: 'Historial', href: '/history', icon: Clock },
-  ];
+  // Navegación según el rol del usuario
+  const getNavigationItems = (): NavItem[] => {
+    const isStudent = user?.role === 'estudiante';
+    const isTeacher = user?.role === 'docente';
+    const isAdmin = user?.role === 'admin';
+
+    if (isStudent) {
+      // Estudiantes: enfoque en aprender y explorar
+      return [
+        { label: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
+        { label: 'Chatbots IA', href: '/chatbots', icon: Bot, badge: 'Tutor' },
+        { label: 'Explorar Recursos', href: '/community', icon: Users },
+      ];
+    } else if (isTeacher || isAdmin) {
+      // Docentes y Admins: herramientas completas de creación
+      return [
+        { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { label: 'Mis Actividades', href: '/activities', icon: FileText },
+        { label: 'Crear Contenido', href: '/create', icon: PlusCircle },
+        { label: 'Chatbots IA', href: '/chatbots', icon: Bot, badge: 'Nuevo' },
+        { label: 'Comunidad', href: '/community', icon: Users },
+        { label: 'Historial', href: '/history', icon: Clock },
+      ];
+    }
+
+    // Default fallback
+    return [
+      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    ];
+  };
+
+  const navigationItems = getNavigationItems();
 
   const bottomItems: NavItem[] = [
     { label: 'Mi Perfil', href: '/profile', icon: User },
