@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { adminAPI } from '@/lib/api';
 import { Card, Badge } from '@/components/ui';
 import Spinner from '@/components/ui/Spinner';
-import DashboardLayout from '@/components/DashboardLayout';
 import PageTransition, { FadeIn, SlideIn } from '@/components/PageTransition';
 import Link from 'next/link';
 import {
@@ -95,9 +94,8 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <DashboardLayout>
-      <PageTransition>
-        <div className="space-y-8">
+    <PageTransition>
+      <div className="space-y-8">
           {/* Header */}
           <FadeIn delay={0.1}>
             <div className="flex items-center justify-between">
@@ -255,6 +253,5 @@ export default function AdminDashboardPage() {
           </SlideIn>
         </div>
       </PageTransition>
-    </DashboardLayout>
   );
 }

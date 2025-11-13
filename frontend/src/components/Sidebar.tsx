@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Settings,
   Clock,
+  Users,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -41,6 +42,7 @@ export default function Sidebar() {
     { label: 'Mis Actividades', href: '/activities', icon: FileText },
     { label: 'Crear Contenido', href: '/create', icon: PlusCircle },
     { label: 'Chatbots IA', href: '/chatbots', icon: Bot, badge: 'Nuevo' },
+    { label: 'Comunidad', href: '/community', icon: Users },
     { label: 'Historial', href: '/history', icon: Clock },
   ];
 
