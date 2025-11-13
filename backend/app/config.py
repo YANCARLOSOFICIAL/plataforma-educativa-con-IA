@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     # Credits
     INITIAL_CREDITS: int = 500
 
+    # Email Service (Resend)
+    RESEND_API_KEY: Optional[str] = None
+    FROM_EMAIL: str = "noreply@tudominio.com"  # Cambiar por tu dominio verificado
+    FRONTEND_URL: str = "http://localhost:3000"
+
     class Config:
         env_file = ".env"
 

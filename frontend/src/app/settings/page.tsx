@@ -1,18 +1,29 @@
 'use client';
 
-import { Settings, Moon, Sun, Monitor, User, Mail, Shield, Bell, Palette } from 'lucide-react';
-import { Card, Button, Badge } from '@/components/ui';
+import { Settings, Moon, Sun, Monitor, User, Mail, Shield, Bell, Palette, Lock, Eye, EyeOff } from 'lucide-react';
+import { Card, Button, Badge, Input } from '@/components/ui';
 import DashboardLayout from '@/components/DashboardLayout';
 import PageTransition, { FadeIn, SlideIn } from '@/components/PageTransition';
 import { useAuthStore } from '@/lib/store';
 import { useTheme } from '@/components/ThemeProvider';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { authAPI } from '@/lib/api';
 
 export default function SettingsPage() {
   const user = useAuthStore(state => state.user);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
+  // Estados para cambio de contraseña
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Evitar hidratación mismatch
   useEffect(() => {
@@ -22,6 +33,47 @@ export default function SettingsPage() {
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
     toast.success(`Tema cambiado a ${newTheme === 'dark' ? 'oscuro' : newTheme === 'light' ? 'claro' : 'sistema'}`);
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validaciones
+    if (newPassword.length < 6) {
+      toast.error('La nueva contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    const toastId = toast.loading('Cambiando contraseña...');
+
+    try {
+      await authAPI.changePassword({
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+
+      toast.success('Contraseña cambiada exitosamente', { id: toastId });
+
+      // Limpiar formulario
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowPasswordForm(false);
+    } catch (error: any) {
+      console.error('Error al cambiar contraseña:', error);
+      toast.error(
+        error?.response?.data?.detail || 'Error al cambiar la contraseña. Verifica tu contraseña actual.',
+        { id: toastId }
+      );
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const roleLabels = {
@@ -235,8 +287,145 @@ export default function SettingsPage() {
             </Card>
           </SlideIn>
 
-          {/* Notifications Settings (Placeholder) */}
+          {/* Security Settings */}
           <SlideIn direction="up" delay={0.25}>
+            <Card variant="glass" padding="lg">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl shadow-lg">
+                  <Lock className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Seguridad
+                </h2>
+              </div>
+
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Gestiona la seguridad de tu cuenta
+              </p>
+
+              {!showPasswordForm ? (
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-gray-800/50">
+                  <div>
+                    <p className="font-bold text-gray-900 dark:text-white mb-1">
+                      Cambiar Contraseña
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Actualiza tu contraseña para mantener tu cuenta segura
+                    </p>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setShowPasswordForm(true)}
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    Cambiar
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 block">
+                      Contraseña Actual
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showCurrentPassword ? 'text' : 'password'}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Ingresa tu contraseña actual"
+                        required
+                        fullWidth
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 block">
+                      Nueva Contraseña
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showNewPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Ingresa tu nueva contraseña"
+                        required
+                        fullWidth
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Mínimo 6 caracteres
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 block">
+                      Confirmar Nueva Contraseña
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirma tu nueva contraseña"
+                        required
+                        fullWidth
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      fullWidth
+                      isLoading={isChangingPassword}
+                    >
+                      Guardar Nueva Contraseña
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      fullWidth
+                      onClick={() => {
+                        setShowPasswordForm(false);
+                        setCurrentPassword('');
+                        setNewPassword('');
+                        setConfirmPassword('');
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </Card>
+          </SlideIn>
+
+          {/* Notifications Settings (Placeholder) */}
+          <SlideIn direction="up" delay={0.3}>
             <Card variant="glass" padding="lg">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">

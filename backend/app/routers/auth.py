@@ -6,7 +6,15 @@ from typing import Optional
 from ..database import get_db
 from ..models.user import User
 from ..models.credit import TransactionType
-from ..schemas.user import UserCreate, UserLogin, UserResponse, Token
+from ..schemas.user import (
+    UserCreate,
+    UserLogin,
+    UserResponse,
+    Token,
+    ChangePasswordRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest
+)
 from ..utils.auth import (
     verify_password,
     get_password_hash,
@@ -16,6 +24,7 @@ from ..utils.auth import (
     get_current_active_user
 )
 from ..services.credit_service import credit_service
+from ..services.email_service import email_service
 from ..config import settings
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -219,3 +228,130 @@ async def logout(response: Response):
     """
     response.delete_cookie(key="refresh_token")
     return {"message": "Sesión cerrada exitosamente"}
+
+
+@router.post("/change-password")
+async def change_password(
+    password_data: ChangePasswordRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Cambia la contraseña del usuario actual
+    """
+    # Verificar que la contraseña actual sea correcta
+    if not verify_password(password_data.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña actual es incorrecta"
+        )
+
+    # Validar que la nueva contraseña sea diferente
+    if verify_password(password_data.new_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La nueva contraseña debe ser diferente a la actual"
+        )
+
+    # Validar longitud mínima
+    if len(password_data.new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña debe tener al menos 6 caracteres"
+        )
+
+    # Actualizar contraseña
+    current_user.hashed_password = get_password_hash(password_data.new_password)
+    db.commit()
+
+    return {"message": "Contraseña actualizada exitosamente"}
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    request_data: ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Solicita recuperación de contraseña enviando un email con un token
+    """
+    # Buscar usuario por email
+    user = db.query(User).filter(User.email == request_data.email).first()
+
+    # Por seguridad, siempre devolver el mismo mensaje aunque el email no exista
+    # Esto previene que se pueda verificar qué emails están registrados
+    if not user:
+        return {"message": "Si el correo existe, recibirás instrucciones para recuperar tu contraseña"}
+
+    # Crear token de reset (válido por 1 hora)
+    reset_token = create_access_token(
+        data={"sub": user.email, "purpose": "password_reset"},
+        expires_delta=timedelta(hours=1)
+    )
+
+    # Enviar email de recuperación
+    email_sent = email_service.send_password_reset_email(
+        to_email=user.email,
+        user_name=user.full_name or user.username,
+        reset_token=reset_token
+    )
+
+    # Respuesta genérica para prevenir enumeración de usuarios
+    return {
+        "message": "Si el correo existe, recibirás instrucciones para recuperar tu contraseña"
+    }
+
+
+@router.post("/reset-password")
+async def reset_password(
+    reset_data: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Resetea la contraseña usando el token de recuperación
+    """
+    from jose import JWTError, jwt
+    from ..config import settings
+
+    try:
+        # Decodificar y verificar el token
+        payload = jwt.decode(
+            reset_data.token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM]
+        )
+        email: str = payload.get("sub")
+        purpose: str = payload.get("purpose")
+
+        # Verificar que el token sea para reset de contraseña
+        if not email or purpose != "password_reset":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Token inválido"
+            )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token inválido o expirado"
+        )
+
+    # Buscar usuario
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    # Validar longitud mínima de la nueva contraseña
+    if len(reset_data.new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña debe tener al menos 6 caracteres"
+        )
+
+    # Actualizar contraseña
+    user.hashed_password = get_password_hash(reset_data.new_password)
+    db.commit()
+
+    return {"message": "Contraseña restablecida exitosamente"}

@@ -86,15 +86,25 @@ export default function LoginPage() {
               autoFocus
             />
 
-            <Input
-              {...register('password', { required: 'La contraseña es requerida' })}
-              type="password"
-              label="Contraseña"
-              placeholder="Ingresa tu contraseña"
-              error={errors.password?.message}
-              fullWidth
-              required
-            />
+            <div>
+              <Input
+                {...register('password', { required: 'La contraseña es requerida' })}
+                type="password"
+                label="Contraseña"
+                placeholder="Ingresa tu contraseña"
+                error={errors.password?.message}
+                fullWidth
+                required
+              />
+              <div className="text-right mt-2">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold hover:underline transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+            </div>
 
             <Button
               type="submit"
