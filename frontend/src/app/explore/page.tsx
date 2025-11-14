@@ -14,6 +14,7 @@ export default function ExplorePage() {
   const [filterType, setFilterType] = useState<string | null>(null);
   const user = useAuthStore((state) => state.user);
   const isHydrated = useAuthStore((state) => state.isHydrated);
+  const isLoggingOut = useAuthStore((state) => state.isLoggingOut);
 
   const { data: activities, isLoading } = useQuery({
     queryKey: ['public-activities'],
@@ -38,13 +39,16 @@ export default function ExplorePage() {
     : [];
 
   // Esperar a que el store se hidrate antes de renderizar
-  if (!isHydrated) {
+  if (!isHydrated || isLoggingOut) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
       </div>
     );
   }
+
+  // Forzar user a ser null si estamos después de logout
+  const actualUser = isLoggingOut ? null : user;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -63,7 +67,7 @@ export default function ExplorePage() {
               </Link>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              {!user ? (
+              {!actualUser ? (
                 <>
                   <Link href="/login">
                     <Button variant="outline" size="sm">
@@ -116,7 +120,7 @@ export default function ExplorePage() {
           </FadeIn>
 
           {/* Info Banner */}
-          {!user && (
+          {!actualUser && (
             <FadeIn delay={0.15}>
               <Card variant="glass" padding="md" className="border-2 border-primary-300/50 dark:border-primary-500/30">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -242,7 +246,7 @@ export default function ExplorePage() {
                       </div>
 
                       <div className="w-full sm:w-auto">
-                        {user ? (
+                        {actualUser ? (
                           <Link href={`/activity/${activity.id}`} className="block">
                             <Button variant="primary" size="sm" className="w-full">
                               <Eye className="w-4 h-4 mr-2" />
@@ -250,10 +254,10 @@ export default function ExplorePage() {
                             </Button>
                           </Link>
                         ) : (
-                          <Link href="/register" className="block">
+                          <Link href={`/activity/${activity.id}`} className="block">
                             <Button variant="primary" size="sm" className="w-full">
-                              <LogIn className="w-4 h-4 mr-2" />
-                              Regístrate para Ver
+                              <Eye className="w-4 h-4 mr-2" />
+                              Ver Actividad
                             </Button>
                           </Link>
                         )}
@@ -283,7 +287,7 @@ export default function ExplorePage() {
           )}
 
           {/* CTA Banner */}
-          {!user && filteredActivities.length > 0 && (
+          {!actualUser && filteredActivities.length > 0 && (
             <FadeIn delay={0.3}>
               <Card variant="elevated" padding="none" className="overflow-hidden">
                 <div className="bg-gradient-to-r from-primary-600 via-blue-600 to-purple-600 p-6 sm:p-8 lg:p-12 text-center">

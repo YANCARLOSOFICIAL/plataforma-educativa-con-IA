@@ -9,7 +9,7 @@ import Spinner from './ui/Spinner';
 import { ThemeProvider } from './ThemeProvider';
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, token, isHydrated, clearAuth, setAuth } = useAuthStore();
+  const { user, token, isHydrated, isLoggingOut, clearAuth, setAuth } = useAuthStore();
   const [isValidating, setIsValidating] = useState(true);
   const [hasValidated, setHasValidated] = useState(false);
 
@@ -18,6 +18,12 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     const validateSession = async () => {
       // Esperar a que el store se hidrate
       if (!isHydrated) return;
+
+      // Si estamos haciendo logout, NO validar nada
+      if (isLoggingOut) {
+        setIsValidating(false);
+        return;
+      }
 
       // Si ya validamos, no hacer nada
       if (hasValidated) return;
@@ -28,7 +34,9 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       // Solo validar si estamos en rutas protegidas
       const currentPath = window.location.pathname;
       const publicPaths = ['/login', '/register', '/', '/explore'];
-      const isPublicPath = publicPaths.includes(currentPath) || currentPath.startsWith('/explore');
+      const isPublicPath = publicPaths.includes(currentPath) ||
+                          currentPath.startsWith('/explore') ||
+                          currentPath.startsWith('/activity/');
 
       // Si estamos en ruta pública, no validar
       if (isPublicPath) {
@@ -60,7 +68,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     validateSession();
-  }, [isHydrated, hasValidated]); // Removido user, token, setAuth, clearAuth para evitar re-renders
+  }, [isHydrated, hasValidated, isLoggingOut]); // Agregado isLoggingOut para detectar logout
 
   // Cross-tab synchronization
   useEffect(() => {

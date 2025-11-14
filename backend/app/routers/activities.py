@@ -5,7 +5,7 @@ from ..database import get_db
 from ..models.user import User, UserRole
 from ..models.activity import Activity, ActivityType
 from ..schemas.activity import ActivityResponse, ActivityUpdate
-from ..utils.auth import get_current_active_user
+from ..utils.auth import get_current_active_user, get_current_user_optional
 
 router = APIRouter(prefix="/api/activities", tags=["Activities"])
 
@@ -16,11 +16,12 @@ async def get_activities(
     is_public: Optional[bool] = None,
     skip: int = 0,
     limit: int = Query(default=20, le=100),
-    current_user: User = Depends(get_current_active_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """
-    Obtiene lista de actividades (públicas + propias del usuario)
+    Obtiene lista de actividades (públicas + propias del usuario).
+    Permite acceso anónimo para ver solo actividades públicas.
     """
     query = db.query(Activity)
 
@@ -28,8 +29,11 @@ async def get_activities(
     if activity_type:
         query = query.filter(Activity.activity_type == activity_type)
 
-    # Mostrar actividades públicas o las creadas por el usuario
-    if current_user.role == UserRole.ADMIN:
+    # Si no hay usuario autenticado, solo mostrar actividades públicas
+    if current_user is None:
+        query = query.filter(Activity.is_public == True)
+    # Si hay usuario autenticado
+    elif current_user.role == UserRole.ADMIN:
         # Admin puede ver todo
         pass
     else:
@@ -52,11 +56,12 @@ async def get_activities(
 @router.get("/{activity_id}", response_model=ActivityResponse)
 async def get_activity(
     activity_id: int,
-    current_user: User = Depends(get_current_active_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """
-    Obtiene una actividad específica
+    Obtiene una actividad específica.
+    Permite acceso anónimo solo para actividades públicas.
     """
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
 
@@ -64,8 +69,13 @@ async def get_activity(
         raise HTTPException(status_code=404, detail="Actividad no encontrada")
 
     # Verificar permisos
-    if not activity.is_public and activity.creator_id != current_user.id and current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="No tienes permiso para ver esta actividad")
+    if not activity.is_public:
+        # Si la actividad es privada, requiere autenticación
+        if current_user is None:
+            raise HTTPException(status_code=401, detail="Autenticación requerida para ver esta actividad")
+        # Verificar que sea el creador o admin
+        if activity.creator_id != current_user.id and current_user.role != UserRole.ADMIN:
+            raise HTTPException(status_code=403, detail="No tienes permiso para ver esta actividad")
 
     return ActivityResponse.from_orm(activity)
 

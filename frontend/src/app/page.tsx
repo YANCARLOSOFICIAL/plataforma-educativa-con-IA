@@ -23,17 +23,18 @@ import { Button, Card, Badge } from '@/components/ui';
 export default function LandingPage() {
   const user = useAuthStore((state) => state.user);
   const isHydrated = useAuthStore((state) => state.isHydrated);
+  const isLoggingOut = useAuthStore((state) => state.isLoggingOut);
   const router = useRouter();
 
-  // Redirigir a dashboard solo si hay usuario autenticado
+  // Redirigir a dashboard solo si hay usuario autenticado Y NO estamos haciendo logout
   useEffect(() => {
-    if (isHydrated && user) {
+    if (isHydrated && user && !isLoggingOut) {
       router.push('/dashboard');
     }
-  }, [user, router, isHydrated]);
+  }, [user, router, isHydrated, isLoggingOut]);
 
   // Esperar a que el store se hidrate antes de renderizar
-  if (!isHydrated) {
+  if (!isHydrated || isLoggingOut) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
@@ -41,8 +42,8 @@ export default function LandingPage() {
     );
   }
 
-  // Si hay usuario, no mostrar nada mientras redirige
-  if (user) {
+  // Si hay usuario Y NO estamos haciendo logout, no mostrar nada mientras redirige
+  if (user && !isLoggingOut) {
     return null;
   }
 

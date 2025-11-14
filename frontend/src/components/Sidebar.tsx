@@ -80,12 +80,12 @@ export default function Sidebar() {
   }
 
   const handleLogout = async () => {
+    // Limpiar autenticación
     clearAuth();
 
-    // Pequeño delay para asegurar que el estado se limpie completamente
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 100);
+    // HARD RELOAD para asegurar que TODO el estado se limpie
+    // Esto es CRÍTICO para seguridad
+    window.location.replace('/');
   };
 
   const isActive = (href: string) => {

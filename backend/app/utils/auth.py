@@ -127,3 +127,34 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+# OAuth2 opcional (no lanza error si no hay token)
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
+
+
+async def get_current_user_optional(
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """
+    Obtiene el usuario actual si hay un token válido, de lo contrario retorna None.
+    NO lanza error si no hay autenticación.
+    """
+    if token is None:
+        return None
+
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        token_data = TokenData(email=email)
+    except JWTError:
+        return None
+
+    user = db.query(User).filter(User.email == token_data.email).first()
+    if user is None or not user.is_active:
+        return None
+
+    return user
