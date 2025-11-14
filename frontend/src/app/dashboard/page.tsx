@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/lib/store';
 import { useQuery } from '@tanstack/react-query';
-import { authAPI, activitiesAPI, chatbotsAPI } from '@/lib/api';
+import { authAPI, activitiesAPI, chatbotAPI } from '@/lib/api';
 import Link from 'next/link';
 import {
   BookOpen,
@@ -61,7 +61,7 @@ function StudentDashboard() {
 
   const { data: chatbots, isLoading: loadingChatbots } = useQuery({
     queryKey: ['chatbots-preview'],
-    queryFn: () => chatbotsAPI.getAll({ limit: 6 }),
+    queryFn: () => chatbotAPI.getMyChatbots(),
   });
 
   return (
@@ -94,14 +94,14 @@ function StudentDashboard() {
 
           {/* Quick Stats */}
           <FadeIn delay={0.15}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
               <Card variant="glass" padding="md" className="group hover:shadow-xl transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-primary-500 to-blue-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
-                    <Zap className="w-6 h-6 text-white" />
+                  <div className="p-2.5 sm:p-3 bg-gradient-to-br from-primary-500 to-blue-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                    <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {credits?.current_balance || user?.credits}
                     </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Créditos</p>
@@ -111,11 +111,11 @@ function StudentDashboard() {
 
               <Card variant="glass" padding="md" className="group hover:shadow-xl transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
-                    <Bot className="w-6 h-6 text-white" />
+                  <div className="p-2.5 sm:p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                    <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {chatbots?.length || 0}
                     </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Tutores IA</p>
@@ -123,13 +123,13 @@ function StudentDashboard() {
                 </div>
               </Card>
 
-              <Card variant="glass" padding="md" className="group hover:shadow-xl transition-all">
+              <Card variant="glass" padding="md" className="group hover:shadow-xl transition-all sm:col-span-2 md:col-span-1">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
-                    <Users className="w-6 h-6 text-white" />
+                  <div className="p-2.5 sm:p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                    <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {publicActivities?.length || 0}
                     </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Recursos</p>
@@ -388,14 +388,14 @@ function TeacherDashboard() {
           </FadeIn>
           {/* Quick Stats */}
           <FadeIn delay={0.15}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <Card variant="glass" padding="md" className="group hover:shadow-xl transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-primary-500 to-blue-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
-                    <Zap className="w-6 h-6 text-white" />
+                  <div className="p-2.5 sm:p-3 bg-gradient-to-br from-primary-500 to-blue-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                    <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {credits?.current_balance || user?.credits}
                     </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Créditos</p>
@@ -405,11 +405,11 @@ function TeacherDashboard() {
 
               <Card variant="glass" padding="md" className="group hover:shadow-xl transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
-                    <Target className="w-6 h-6 text-white" />
+                  <div className="p-2.5 sm:p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                    <Target className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                       {myActivities?.length || 0}
                     </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Actividades</p>
@@ -419,11 +419,11 @@ function TeacherDashboard() {
 
               <Card variant="glass" padding="md" className="group hover:shadow-xl transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
-                    <Bot className="w-6 h-6 text-white" />
+                  <div className="p-2.5 sm:p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                    <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">0</p>
                     <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Chatbots</p>
                   </div>
                 </div>
@@ -431,11 +431,11 @@ function TeacherDashboard() {
 
               <Card variant="glass" padding="md" className="group hover:shadow-xl transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
-                    <TrendingUp className="w-6 h-6 text-white" />
+                  <div className="p-2.5 sm:p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">+15%</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">+15%</p>
                     <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Esta semana</p>
                   </div>
                 </div>

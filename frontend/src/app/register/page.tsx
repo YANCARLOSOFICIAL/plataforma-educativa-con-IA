@@ -51,15 +51,15 @@ export default function RegisterPage() {
       <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-400/30 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '2s' }} />
 
       <div className="max-w-md w-full relative z-10">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-primary-600 via-blue-600 to-purple-600 text-white rounded-3xl mb-6 shadow-2xl animate-float">
-            <UserPlus className="w-12 h-12" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-primary-600 via-blue-600 to-purple-600 text-white rounded-2xl sm:rounded-3xl mb-4 sm:mb-6 shadow-2xl animate-float">
+            <UserPlus className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12" />
           </div>
-          <h2 className="text-5xl font-extrabold bg-gradient-to-r from-primary-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 dark:from-primary-400 dark:via-blue-400 dark:to-purple-400">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-primary-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 sm:mb-3 dark:from-primary-400 dark:via-blue-400 dark:to-purple-400 px-4">
             Crear Cuenta
           </h2>
-          <p className="text-gray-700 dark:text-gray-300 flex items-center justify-center gap-2 text-lg font-medium">
-            <Sparkles className="w-5 h-5 text-primary-500" />
+          <p className="text-gray-700 dark:text-gray-300 flex items-center justify-center gap-2 text-base sm:text-lg font-medium px-4">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-500 flex-shrink-0" />
             Únete a la Plataforma Educativa
           </p>
         </div>

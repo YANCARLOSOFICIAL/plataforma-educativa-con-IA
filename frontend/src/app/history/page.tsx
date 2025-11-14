@@ -54,22 +54,22 @@ export default function HistoryPage() {
         <div className="space-y-8">
           {/* Header */}
           <FadeIn delay={0.1}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-lg">
-                    <Clock className="w-7 h-7 text-white" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-lg flex-shrink-0">
+                    <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   </div>
-                  <h1 className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-indigo-400 dark:to-purple-400">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-indigo-400 dark:to-purple-400">
                     Historial
                   </h1>
                   {!isLoading && filteredActivities && (
-                    <Badge className="!bg-gradient-to-r !from-purple-600 !to-indigo-600 !text-white shadow-lg text-lg px-4 py-2">
+                    <Badge className="!bg-gradient-to-r !from-purple-600 !to-indigo-600 !text-white shadow-lg text-sm sm:text-base lg:text-lg px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 flex-shrink-0">
                       {filteredActivities.length}
                     </Badge>
                   )}
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-lg ml-16">
+                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg sm:ml-11 lg:ml-16">
                   Revisa tu historial de actividades creadas
                 </p>
               </div>
@@ -80,28 +80,30 @@ export default function HistoryPage() {
           {activityTypes.length > 0 && (
             <FadeIn delay={0.15}>
               <Card variant="glass" padding="md">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-semibold">
-                    <Filter className="w-5 h-5" />
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-semibold text-sm sm:text-base flex-shrink-0">
+                    <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span>Filtrar:</span>
                   </div>
-                  <Button
-                    variant={filterType === null ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setFilterType(null)}
-                  >
-                    Todas
-                  </Button>
-                  {activityTypes.map((type) => (
+                  <div className="flex flex-wrap gap-2">
                     <Button
-                      key={type}
-                      variant={filterType === type ? 'primary' : 'secondary'}
+                      variant={filterType === null ? 'primary' : 'secondary'}
                       size="sm"
-                      onClick={() => setFilterType(type)}
+                      onClick={() => setFilterType(null)}
                     >
-                      {activityTypeLabels[type]}
+                      Todas
                     </Button>
-                  ))}
+                    {activityTypes.map((type) => (
+                      <Button
+                        key={type}
+                        variant={filterType === type ? 'primary' : 'secondary'}
+                        size="sm"
+                        onClick={() => setFilterType(type)}
+                      >
+                        {activityTypeLabels[type]}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </Card>
             </FadeIn>

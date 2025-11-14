@@ -27,8 +27,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Solo validar si estamos en rutas protegidas
       const currentPath = window.location.pathname;
-      const publicPaths = ['/login', '/register', '/'];
-      const isPublicPath = publicPaths.includes(currentPath);
+      const publicPaths = ['/login', '/register', '/', '/explore'];
+      const isPublicPath = publicPaths.includes(currentPath) || currentPath.startsWith('/explore');
 
       // Si estamos en ruta pública, no validar
       if (isPublicPath) {
@@ -46,14 +46,14 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           // Si falla, limpiar la sesión completamente
           console.error('Error validando sesión:', error);
           clearAuth();
-          // Redirigir a login si estamos en ruta protegida
+          // Redirigir a landing page si estamos en ruta protegida
           if (!isPublicPath) {
-            window.location.href = '/login';
+            window.location.href = '/';
           }
         }
       } else if (!isPublicPath) {
-        // Si no hay usuario/token y estamos en ruta protegida, redirigir
-        window.location.href = '/login';
+        // Si no hay usuario/token y estamos en ruta protegida, redirigir a landing
+        window.location.href = '/';
       }
 
       setIsValidating(false);
@@ -71,7 +71,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!e.newValue || e.newValue === 'null' || e.newValue === '{}') {
           console.log('Sesión cerrada en otra pestaña, sincronizando...');
           clearAuth();
-          window.location.href = '/login';
+          window.location.href = '/';
         } else if (e.newValue !== e.oldValue) {
           // Sincronizar el estado con la otra pestaña
           try {
@@ -83,16 +83,16 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
                 setAuth(newUser, newToken);
               } else {
                 clearAuth();
-                window.location.href = '/login';
+                window.location.href = '/';
               }
             } else {
               clearAuth();
-              window.location.href = '/login';
+              window.location.href = '/';
             }
           } catch (error) {
             console.error('Error sincronizando estado:', error);
             clearAuth();
-            window.location.href = '/login';
+            window.location.href = '/';
           }
         }
       }

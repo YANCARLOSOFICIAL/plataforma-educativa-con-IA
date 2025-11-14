@@ -26,11 +26,12 @@ export default function ActivityDetailPage() {
     enabled: !!activityId,
   });
 
+  // Solo redirigir si la actividad está cargada y es privada
   useEffect(() => {
-    if (!user) {
-      router.push('/login');
+    if (!user && activity && !activity.is_public) {
+      router.push('/register');
     }
-  }, [user, router]);
+  }, [user, router, activity]);
 
   const handleExportWord = async () => {
     if (!activity) return;
@@ -84,8 +85,6 @@ export default function ActivityDetailPage() {
     }
   };
 
-  if (!user) return null;
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -118,30 +117,31 @@ export default function ActivityDetailPage() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
           {/* Back Button */}
           <SlideIn direction="right">
             <Link
-              href="/activities"
-              className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-6 group transition-colors"
+              href={user ? "/activities" : "/explore"}
+              className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4 sm:mb-6 group transition-colors text-sm sm:text-base"
             >
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-              Volver a Actividades
+              <span className="hidden sm:inline">{user ? "Volver a Actividades" : "Volver a Explorar"}</span>
+              <span className="sm:hidden">Volver</span>
             </Link>
           </SlideIn>
 
           {/* Header Card */}
           <FadeIn delay={0.1}>
-            <Card variant="elevated" padding="none" className="overflow-hidden mb-6">
-              <div className="bg-gradient-to-r from-primary-600 via-blue-600 to-indigo-600 px-8 py-10 text-white relative overflow-hidden">
+            <Card variant="elevated" padding="none" className="overflow-hidden mb-4 sm:mb-6">
+              <div className="bg-gradient-to-r from-primary-600 via-blue-600 to-indigo-600 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 text-white relative overflow-hidden">
                 {/* Background decoration */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full -ml-24 -mb-24"></div>
 
                 <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h1 className="text-4xl font-bold mb-4">{activity.title}</h1>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4 mb-4">
+                    <div className="flex-1 w-full sm:w-auto">
+                      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 break-words">{activity.title}</h1>
                       <div className="flex flex-wrap gap-2">
                         <Badge variant="default" size="md" className="bg-white/20 text-white border-white/30">
                           {activityTypeLabels[activity.activity_type]}
@@ -171,30 +171,52 @@ export default function ActivityDetailPage() {
 
               {/* Action Buttons */}
               <div className="px-8 py-5 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-600">
-                <div className="flex flex-wrap gap-3">
-                  <Button onClick={handleExportWord} variant="primary" size="md">
-                    <Download className="w-4 h-4 mr-2" />
-                    Exportar Word
-                  </Button>
-                  {['exam', 'survey', 'rubric', 'crossword', 'word_search'].includes(activity.activity_type) && (
-                    <Button onClick={handleExportExcel} variant="secondary" size="md">
+                {!user ? (
+                  // CTA para usuarios no autenticados
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-gray-700 dark:text-gray-300 font-medium">
+                      ¿Te gusta este contenido? Regístrate gratis para crear tus propias actividades
+                    </p>
+                    <div className="flex gap-3">
+                      <Link href="/login">
+                        <Button variant="outline" size="md">
+                          Iniciar Sesión
+                        </Button>
+                      </Link>
+                      <Link href="/register">
+                        <Button variant="primary" size="md">
+                          Registrarse Gratis
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  // Botones de acción para usuarios autenticados
+                  <div className="flex flex-wrap gap-3">
+                    <Button onClick={handleExportWord} variant="primary" size="md">
                       <Download className="w-4 h-4 mr-2" />
-                      Exportar Excel
+                      Exportar Word
                     </Button>
-                  )}
-                  {activity.activity_type === 'slides' && (
-                    <Button onClick={handleExportPptx} variant="secondary" size="md">
-                      <Download className="w-4 h-4 mr-2" />
-                      Exportar PPTX
-                    </Button>
-                  )}
-                  {activity.creator_id === user.id && (
-                    <Button onClick={togglePublic} variant="outline" size="md">
-                      <Share2 className="w-4 h-4 mr-2" />
-                      {activity.is_public ? 'Hacer Privado' : 'Hacer Público'}
-                    </Button>
-                  )}
-                </div>
+                    {['exam', 'survey', 'rubric', 'crossword', 'word_search'].includes(activity.activity_type) && (
+                      <Button onClick={handleExportExcel} variant="secondary" size="md">
+                        <Download className="w-4 h-4 mr-2" />
+                        Exportar Excel
+                      </Button>
+                    )}
+                    {activity.activity_type === 'slides' && (
+                      <Button onClick={handleExportPptx} variant="secondary" size="md">
+                        <Download className="w-4 h-4 mr-2" />
+                        Exportar PPTX
+                      </Button>
+                    )}
+                    {activity.creator_id === user.id && (
+                      <Button onClick={togglePublic} variant="outline" size="md">
+                        <Share2 className="w-4 h-4 mr-2" />
+                        {activity.is_public ? 'Hacer Privado' : 'Hacer Público'}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </Card>
           </FadeIn>

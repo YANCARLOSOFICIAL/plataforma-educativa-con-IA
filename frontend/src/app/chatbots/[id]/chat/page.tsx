@@ -24,6 +24,7 @@ export default function ChatPage() {
   const [message, setMessage] = useState('');
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [showSidebar, setShowSidebar] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch chatbot details
@@ -133,26 +134,35 @@ export default function ChatPage() {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-120px)] flex gap-4">
+      <div className="h-[calc(100vh-120px)] flex flex-col lg:flex-row gap-2 sm:gap-4">
+        {/* Mobile Sidebar Toggle */}
+        <button
+          onClick={() => setShowSidebar(!showSidebar)}
+          className="lg:hidden mb-2 px-4 py-2 bg-purple-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-purple-700 transition-colors"
+        >
+          <Bot className="w-4 h-4" />
+          <span>{showSidebar ? 'Ocultar' : 'Ver'} Conversaciones</span>
+        </button>
+
         {/* Conversations Sidebar */}
-        <div className="w-80 flex flex-col">
-          <Card variant="glass" className="flex-1 flex flex-col overflow-hidden">
+        <div className={`${showSidebar ? 'flex' : 'hidden'} lg:flex w-full lg:w-80 flex-col mb-4 lg:mb-0`}>
+          <Card variant="glass" className="flex-1 flex flex-col overflow-hidden max-h-96 lg:max-h-none">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => router.push('/chatbots')}
-                className="w-full mb-3"
+                className="w-full mb-2 sm:mb-3 text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 Volver
               </Button>
               <Button
                 variant="primary"
                 size="sm"
                 onClick={handleNewConversation}
-                className="w-full !bg-gradient-to-r !from-purple-600 !to-pink-600"
+                className="w-full !bg-gradient-to-r !from-purple-600 !to-pink-600 text-sm"
               >
                 Nueva Conversación
               </Button>
@@ -208,29 +218,29 @@ export default function ChatPage() {
         <div className="flex-1 flex flex-col">
           <Card variant="glass" className="flex-1 flex flex-col overflow-hidden">
             {/* Chat Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
-                <Bot className="w-6 h-6 text-white" />
+            <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2 sm:gap-3">
+              <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg flex-shrink-0">
+                <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 dark:text-white truncate">
                   {chatbot.name}
                 </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                   {chatbot.description || 'Chatbot IA'}
                 </p>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4">
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <Bot className="w-20 h-20 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                  <Bot className="w-16 h-16 sm:w-20 sm:h-20 text-gray-400 mb-3 sm:mb-4" />
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-2">
                     Inicia una conversación
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 max-w-md">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-md">
                     {chatbot.personality || 'Hola! Estoy aquí para ayudarte. ¿En qué puedo asistirte hoy?'}
                   </p>
                 </div>
@@ -238,28 +248,28 @@ export default function ChatPage() {
                 messages.map((msg, index) => (
                   <div
                     key={msg.id || index}
-                    className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex gap-2 sm:gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {msg.role === 'assistant' && (
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0 hidden sm:block">
                         <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
-                          <Bot className="w-5 h-5 text-white" />
+                          <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
                       </div>
                     )}
                     <div
-                      className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                      className={`max-w-[85%] sm:max-w-[75%] lg:max-w-[70%] rounded-2xl px-3 sm:px-4 py-2 sm:py-3 ${
                         msg.role === 'user'
                           ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                           : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                     </div>
                     {msg.role === 'user' && (
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0 hidden sm:block">
                         <div className="p-2 bg-gray-300 dark:bg-gray-600 rounded-lg">
-                          <User className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 dark:text-gray-200" />
                         </div>
                       </div>
                     )}
@@ -286,26 +296,26 @@ export default function ChatPage() {
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex gap-3">
+            <form onSubmit={handleSendMessage} className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex gap-2 sm:gap-3">
                 <input
                   type="text"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Escribe tu mensaje..."
                   disabled={sendMessageMutation.isPending}
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-50"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-50"
                 />
                 <Button
                   type="submit"
                   variant="primary"
                   disabled={!message.trim() || sendMessageMutation.isPending}
-                  className="!bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 px-6"
+                  className="!bg-gradient-to-r !from-purple-600 !to-pink-600 hover:!from-purple-700 hover:!to-pink-700 px-4 sm:px-6"
                 >
                   {sendMessageMutation.isPending ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   ) : (
-                    <Send className="w-5 h-5" />
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
                 </Button>
               </div>

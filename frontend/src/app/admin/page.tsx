@@ -98,21 +98,21 @@ export default function AdminDashboardPage() {
       <div className="space-y-8">
           {/* Header */}
           <FadeIn delay={0.1}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-lg">
-                    <Shield className="w-7 h-7 text-white" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-lg flex-shrink-0">
+                    <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   </div>
-                  <h1 className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-indigo-400 dark:to-purple-400">
-                    Panel de Administración
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-indigo-400 dark:to-purple-400">
+                    Panel Admin
                   </h1>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-lg ml-16">
+                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg sm:ml-11 lg:ml-16">
                   Vista general del sistema y gestión de usuarios
                 </p>
               </div>
-              <Badge className="!bg-gradient-to-r !from-purple-500 !to-indigo-600 !text-white shadow-lg text-lg px-4 py-2">
+              <Badge className="!bg-gradient-to-r !from-purple-500 !to-indigo-600 !text-white shadow-lg text-sm sm:text-base lg:text-lg px-3 sm:px-4 py-1.5 sm:py-2 self-start sm:self-auto flex-shrink-0">
                 Admin
               </Badge>
             </div>
@@ -120,7 +120,7 @@ export default function AdminDashboardPage() {
 
           {/* Stats Cards */}
           <FadeIn delay={0.15}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {statsCards.map((stat, index) => {
                 const Icon = stat.icon;
                 const gradientColors = [
@@ -142,10 +142,10 @@ export default function AdminDashboardPage() {
                     <div className="relative">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                          <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
                             {stat.title}
                           </p>
-                          <p className="text-4xl font-extrabold text-gray-900 dark:text-white">
+                          <p className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
                             {stat.value.toLocaleString()}
                           </p>
                         </div>

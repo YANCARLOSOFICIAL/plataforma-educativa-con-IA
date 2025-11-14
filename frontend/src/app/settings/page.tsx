@@ -98,17 +98,17 @@ export default function SettingsPage() {
         <div className="space-y-8">
           {/* Header */}
           <FadeIn delay={0.1}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-3 bg-gradient-to-br from-gray-500 to-gray-700 rounded-2xl shadow-lg">
-                    <Settings className="w-7 h-7 text-white" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="p-2 sm:p-3 bg-gradient-to-br from-gray-500 to-gray-700 rounded-2xl shadow-lg flex-shrink-0">
+                    <Settings className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   </div>
-                  <h1 className="text-4xl font-extrabold bg-gradient-to-r from-gray-600 via-gray-700 to-gray-600 bg-clip-text text-transparent dark:from-gray-400 dark:via-gray-300 dark:to-gray-400">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-gray-600 via-gray-700 to-gray-600 bg-clip-text text-transparent dark:from-gray-400 dark:via-gray-300 dark:to-gray-400">
                     Configuración
                   </h1>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-lg ml-16">
+                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg sm:ml-11 lg:ml-16">
                   Personaliza tu experiencia en la plataforma
                 </p>
               </div>
@@ -131,32 +131,32 @@ export default function SettingsPage() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Selecciona el tema de la interfaz
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {/* Light Theme */}
                   <button
                     onClick={() => handleThemeChange('light')}
-                    className={`p-6 rounded-2xl border-2 transition-all ${
+                    className={`p-4 sm:p-6 rounded-2xl border-2 transition-all ${
                       theme === 'light'
                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                         : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700'
                     }`}
                   >
-                    <div className="flex flex-col items-center gap-3">
-                      <div className={`p-4 rounded-xl ${
+                    <div className="flex flex-col items-center gap-2 sm:gap-3">
+                      <div className={`p-3 sm:p-4 rounded-xl ${
                         theme === 'light'
                           ? 'bg-gradient-to-br from-yellow-400 to-orange-500'
                           : 'bg-gray-200 dark:bg-gray-700'
                       }`}>
-                        <Sun className={`w-8 h-8 ${
+                        <Sun className={`w-6 h-6 sm:w-8 sm:h-8 ${
                           theme === 'light' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
                         }`} />
                       </div>
                       <div className="text-center">
-                        <p className="font-bold text-gray-900 dark:text-white mb-1">Claro</p>
+                        <p className="font-bold text-gray-900 dark:text-white mb-1 text-sm sm:text-base">Claro</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Tema clásico</p>
                       </div>
                       {theme === 'light' && (
-                        <Badge variant="primary">Activo</Badge>
+                        <Badge variant="primary" size="sm">Activo</Badge>
                       )}
                     </div>
                   </button>
@@ -164,28 +164,28 @@ export default function SettingsPage() {
                   {/* Dark Theme */}
                   <button
                     onClick={() => handleThemeChange('dark')}
-                    className={`p-6 rounded-2xl border-2 transition-all ${
+                    className={`p-4 sm:p-6 rounded-2xl border-2 transition-all ${
                       theme === 'dark'
                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                         : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700'
                     }`}
                   >
-                    <div className="flex flex-col items-center gap-3">
-                      <div className={`p-4 rounded-xl ${
+                    <div className="flex flex-col items-center gap-2 sm:gap-3">
+                      <div className={`p-3 sm:p-4 rounded-xl ${
                         theme === 'dark'
                           ? 'bg-gradient-to-br from-indigo-500 to-purple-600'
                           : 'bg-gray-200 dark:bg-gray-700'
                       }`}>
-                        <Moon className={`w-8 h-8 ${
+                        <Moon className={`w-6 h-6 sm:w-8 sm:h-8 ${
                           theme === 'dark' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
                         }`} />
                       </div>
                       <div className="text-center">
-                        <p className="font-bold text-gray-900 dark:text-white mb-1">Oscuro</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Reduce fatiga visual</p>
+                        <p className="font-bold text-gray-900 dark:text-white mb-1 text-sm sm:text-base">Oscuro</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Reduce fatiga</p>
                       </div>
                       {theme === 'dark' && (
-                        <Badge variant="primary">Activo</Badge>
+                        <Badge variant="primary" size="sm">Activo</Badge>
                       )}
                     </div>
                   </button>
@@ -193,28 +193,28 @@ export default function SettingsPage() {
                   {/* System Theme */}
                   <button
                     onClick={() => handleThemeChange('system')}
-                    className={`p-6 rounded-2xl border-2 transition-all ${
+                    className={`p-4 sm:p-6 rounded-2xl border-2 transition-all sm:col-span-2 md:col-span-1 ${
                       theme === 'system'
                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                         : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700'
                     }`}
                   >
-                    <div className="flex flex-col items-center gap-3">
-                      <div className={`p-4 rounded-xl ${
+                    <div className="flex flex-col items-center gap-2 sm:gap-3">
+                      <div className={`p-3 sm:p-4 rounded-xl ${
                         theme === 'system'
                           ? 'bg-gradient-to-br from-blue-500 to-cyan-600'
                           : 'bg-gray-200 dark:bg-gray-700'
                       }`}>
-                        <Monitor className={`w-8 h-8 ${
+                        <Monitor className={`w-6 h-6 sm:w-8 sm:h-8 ${
                           theme === 'system' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
                         }`} />
                       </div>
                       <div className="text-center">
-                        <p className="font-bold text-gray-900 dark:text-white mb-1">Sistema</p>
+                        <p className="font-bold text-gray-900 dark:text-white mb-1 text-sm sm:text-base">Sistema</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Automático</p>
                       </div>
                       {theme === 'system' && (
-                        <Badge variant="primary">Activo</Badge>
+                        <Badge variant="primary" size="sm">Activo</Badge>
                       )}
                     </div>
                   </button>

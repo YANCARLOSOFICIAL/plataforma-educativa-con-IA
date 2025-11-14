@@ -121,16 +121,16 @@ export default function ChatbotsPage() {
           />
           {/* Header */}
           <FadeIn delay={0.1}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-pink-400 dark:to-purple-400 mb-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="flex-1">
+                <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-pink-400 dark:to-purple-400 mb-2">
                   Chatbots IA
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
+                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg">
                   Asistentes virtuales especializados para diferentes áreas educativas
                 </p>
               </div>
-              <Badge className="!bg-gradient-to-r !from-accent-500 !to-pink-600 !text-white shadow-lg text-lg px-4 py-2">
+              <Badge className="!bg-gradient-to-r !from-accent-500 !to-pink-600 !text-white shadow-lg text-base sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 self-start sm:self-auto flex-shrink-0">
                 Nuevo
               </Badge>
             </div>

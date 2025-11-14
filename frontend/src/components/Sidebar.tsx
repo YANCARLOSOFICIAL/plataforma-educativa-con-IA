@@ -81,7 +81,11 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     clearAuth();
-    window.location.href = '/login';
+
+    // Pequeño delay para asegurar que el estado se limpie completamente
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 100);
   };
 
   const isActive = (href: string) => {

@@ -72,29 +72,30 @@ export default function ActivitiesPage() {
         <div className="space-y-8">
           {/* Header */}
           <FadeIn delay={0.1}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-3 bg-gradient-to-br from-primary-500 to-blue-600 rounded-2xl shadow-lg">
-                    <FileText className="w-7 h-7 text-white" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="p-2 sm:p-3 bg-gradient-to-br from-primary-500 to-blue-600 rounded-2xl shadow-lg flex-shrink-0">
+                    <FileText className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   </div>
-                  <h1 className="text-4xl font-extrabold bg-gradient-to-r from-primary-600 via-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-primary-400 dark:via-blue-400 dark:to-purple-400">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 via-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-primary-400 dark:via-blue-400 dark:to-purple-400">
                     Mis Actividades
                   </h1>
                   {!isLoading && activities && (
-                    <Badge className="!bg-gradient-to-r !from-primary-600 !to-blue-600 !text-white shadow-lg text-lg px-4 py-2">
+                    <Badge className="!bg-gradient-to-r !from-primary-600 !to-blue-600 !text-white shadow-lg text-sm sm:text-base lg:text-lg px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 flex-shrink-0">
                       {activities.length}
                     </Badge>
                   )}
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-lg ml-16">
+                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg sm:ml-11 lg:ml-16">
                   Gestiona y exporta todas tus actividades creadas
                 </p>
               </div>
-              <Link href="/create">
-                <Button variant="primary" size="lg">
+              <Link href="/create" className="w-full sm:w-auto">
+                <Button variant="primary" size="lg" className="w-full sm:w-auto">
                   <Plus className="w-5 h-5 mr-2" />
-                  Nueva Actividad
+                  <span className="hidden sm:inline">Nueva Actividad</span>
+                  <span className="sm:hidden">Nueva</span>
                 </Button>
               </Link>
             </div>
@@ -129,78 +130,78 @@ export default function ActivitiesPage() {
                     hover
                     className="group"
                   >
-                <div className="flex items-start justify-between gap-6">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                <div className="flex flex-col lg:flex-row items-start justify-between gap-4 lg:gap-6">
+                  <div className="flex-1 w-full">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3">
                       {activity.title}
                     </h3>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="primary">
+                      <Badge variant="primary" size="sm">
                         {activityTypeLabels[activity.activity_type]}
                       </Badge>
                       {activity.ai_provider && (
-                        <Badge variant="success">
+                        <Badge variant="success" size="sm">
                           {aiProviderLabels[activity.ai_provider]}
                         </Badge>
                       )}
                       {activity.is_public ? (
-                        <Badge variant="info">Público</Badge>
+                        <Badge variant="info" size="sm">Público</Badge>
                       ) : (
-                        <Badge variant="default">Privado</Badge>
+                        <Badge variant="default" size="sm">Privado</Badge>
                       )}
                       {activity.credits_used > 0 && (
-                        <Badge variant="warning">
+                        <Badge variant="warning" size="sm">
                           {activity.credits_used} créditos
                         </Badge>
                       )}
                     </div>
                     {activity.description && (
-                      <p className="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">{activity.description}</p>
+                      <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm mb-3 line-clamp-2">{activity.description}</p>
                     )}
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       {activity.subject && (
                         <div className="flex items-center gap-1">
-                          <BookOpen className="w-4 h-4" />
-                          <span>{activity.subject}</span>
-                          {activity.grade_level && <span>• {activity.grade_level}</span>}
+                          <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate">{activity.subject}</span>
+                          {activity.grade_level && <span className="flex-shrink-0">• {activity.grade_level}</span>}
                         </div>
                       )}
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(activity.created_at).toLocaleDateString('es-ES', {
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span className="truncate">{new Date(activity.created_at).toLocaleDateString('es-ES', {
                           day: 'numeric',
-                          month: 'long',
+                          month: 'short',
                           year: 'numeric'
                         })}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <Link href={`/activity/${activity.id}`}>
-                      <Button variant="primary" size="sm" fullWidth>
-                        <Eye className="w-4 h-4 mr-2" />
-                        Ver
+                  <div className="flex lg:flex-col gap-2 w-full lg:w-auto flex-wrap lg:flex-nowrap">
+                    <Link href={`/activity/${activity.id}`} className="flex-1 lg:flex-initial">
+                      <Button variant="primary" size="sm" className="w-full">
+                        <Eye className="w-4 h-4 lg:mr-2" />
+                        <span className="hidden sm:inline">Ver</span>
                       </Button>
                     </Link>
                     <Button
                       onClick={() => handleExportWord(activity.id, activity.title)}
                       variant="secondary"
                       size="sm"
-                      fullWidth
+                      className="flex-1 lg:flex-initial lg:w-full"
                     >
-                      <Download className="w-4 h-4 mr-2" />
-                      Word
+                      <Download className="w-4 h-4 lg:mr-2" />
+                      <span className="hidden sm:inline">Word</span>
                     </Button>
                     {activity.activity_type === 'slides' && (
                       <Button
                         onClick={() => handleExportPptx(activity.id, activity.title)}
                         variant="secondary"
                         size="sm"
-                        fullWidth
+                        className="flex-1 lg:flex-initial lg:w-full"
                       >
-                        <Download className="w-4 h-4 mr-2" />
-                        PPTX
+                        <Download className="w-4 h-4 lg:mr-2" />
+                        <span className="hidden sm:inline">PPTX</span>
                       </Button>
                     )}
                     {['exam', 'survey', 'rubric', 'crossword', 'word_search'].includes(activity.activity_type) && (
@@ -208,20 +209,20 @@ export default function ActivitiesPage() {
                         onClick={() => handleExportExcel(activity.id, activity.title)}
                         variant="secondary"
                         size="sm"
-                        fullWidth
+                        className="flex-1 lg:flex-initial lg:w-full"
                       >
-                        <Download className="w-4 h-4 mr-2" />
-                        Excel
+                        <Download className="w-4 h-4 lg:mr-2" />
+                        <span className="hidden sm:inline">Excel</span>
                       </Button>
                     )}
                     <Button
                       onClick={() => handleDelete(activity.id)}
                       variant="danger"
                       size="sm"
-                      fullWidth
+                      className="flex-1 lg:flex-initial lg:w-full"
                     >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Eliminar
+                      <Trash2 className="w-4 h-4 lg:mr-2" />
+                      <span className="hidden sm:inline">Eliminar</span>
                     </Button>
                   </div>
                 </div>

@@ -58,22 +58,22 @@ export default function ProfilePage() {
         <div className="space-y-8">
           {/* Header */}
           <FadeIn delay={0.1}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-lg">
-                    <User className="w-7 h-7 text-white" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-lg flex-shrink-0">
+                    <User className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   </div>
-                  <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-cyan-400 dark:to-blue-400">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-cyan-400 dark:to-blue-400">
                     Mi Perfil
                   </h1>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-lg ml-16">
+                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg sm:ml-11 lg:ml-16">
                   Información de tu cuenta y estadísticas
                 </p>
               </div>
               <Badge
-                className={`text-lg px-4 py-2 shadow-lg ${
+                className={`text-sm sm:text-base lg:text-lg px-3 sm:px-4 py-1.5 sm:py-2 shadow-lg self-start sm:self-auto flex-shrink-0 ${
                   user.role === 'admin'
                     ? '!bg-gradient-to-r !from-purple-500 !to-indigo-600 !text-white'
                     : user.role === 'docente'
@@ -203,19 +203,19 @@ export default function ProfilePage() {
                 Estadísticas de Uso
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <Card variant="glass" padding="lg" hover className="group">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
                         Total de Actividades
                       </p>
-                      <p className="text-4xl font-extrabold text-gray-900 dark:text-white">
+                      <p className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
                         {totalActivities}
                       </p>
                     </div>
-                    <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
-                      <Activity className="w-7 h-7 text-white" />
+                    <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                      <Activity className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     </div>
                   </div>
                 </Card>
@@ -223,15 +223,15 @@ export default function ProfilePage() {
                 <Card variant="glass" padding="lg" hover className="group">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
                         Créditos Utilizados
                       </p>
-                      <p className="text-4xl font-extrabold text-gray-900 dark:text-white">
+                      <p className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
                         {totalCreditsUsed}
                       </p>
                     </div>
-                    <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
-                      <CreditCard className="w-7 h-7 text-white" />
+                    <div className="p-3 sm:p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                      <CreditCard className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     </div>
                   </div>
                 </Card>
@@ -239,15 +239,15 @@ export default function ProfilePage() {
                 <Card variant="glass" padding="lg" hover className="group">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
                         Actividades Públicas
                       </p>
-                      <p className="text-4xl font-extrabold text-gray-900 dark:text-white">
+                      <p className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
                         {publicActivities}
                       </p>
                     </div>
-                    <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
-                      <Award className="w-7 h-7 text-white" />
+                    <div className="p-3 sm:p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                      <Award className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     </div>
                   </div>
                 </Card>
@@ -255,17 +255,17 @@ export default function ProfilePage() {
                 <Card variant="glass" padding="lg" hover className="group">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
                         Promedio por Día
                       </p>
-                      <p className="text-4xl font-extrabold text-gray-900 dark:text-white">
+                      <p className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
                         {daysSinceRegistration > 0
                           ? (totalActivities / daysSinceRegistration).toFixed(1)
                           : '0'}
                       </p>
                     </div>
-                    <div className="p-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
-                      <TrendingUp className="w-7 h-7 text-white" />
+                    <div className="p-3 sm:p-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
+                      <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     </div>
                   </div>
                 </Card>
