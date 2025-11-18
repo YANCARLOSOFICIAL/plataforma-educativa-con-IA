@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 import json
+from io import BytesIO
+import PyPDF2
 from ..database import get_db
 from ..models.user import User
-from ..models.activity import Activity, ActivityType
+from ..models.activity import Activity, ActivityType, AIProvider
 from ..schemas.activity import (
     ActivityResponse,
     ExamRequest,
@@ -35,14 +37,28 @@ async def save_activity_with_credits(
     """
     Función auxiliar para guardar actividad y gestionar créditos
     """
+    # Parse content safely
+    content_value = generated_content.get("content")
+    if isinstance(content_value, str):
+        # Only parse if the string is not empty
+        if content_value.strip():
+            try:
+                content_value = json.loads(content_value)
+            except json.JSONDecodeError:
+                # If it's not valid JSON, keep as string
+                pass
+        else:
+            # Empty string, set to empty dict
+            content_value = {}
+    elif content_value is None:
+        content_value = {}
+
     # Crear actividad
     activity = Activity(
         title=request_data.get("title", f"{activity_type.value.replace('_', ' ').title()}"),
         description=request_data.get("description"),
         activity_type=activity_type,
-        # Ensure content is a dict when possible. Some providers or legacy rows may
-        # return a JSON string; try to parse it before saving.
-        content=(lambda v: ( __import__('json').loads(v) if isinstance(v, str) else v))(generated_content.get("content")),
+        content=content_value,
         subject=request_data.get("subject"),
         grade_level=request_data.get("grade_level"),
         is_public=request_data.get("is_public", False),
@@ -138,6 +154,115 @@ async def generate_summary(
         return ActivityResponse.from_orm(activity)
 
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/summary/pdf", response_model=ActivityResponse)
+async def generate_summary_from_pdf(
+    file: UploadFile = File(...),
+    length: str = Form("medium"),
+    ai_provider: str = Form("ollama"),
+    model_name: str = Form(None),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Genera un resumen a partir de un archivo PDF
+    """
+    try:
+        # Validar que el archivo sea un PDF
+        if not file.filename.lower().endswith('.pdf'):
+            raise HTTPException(status_code=400, detail="El archivo debe ser un PDF")
+
+        # Validar tamaño del archivo (máximo 10MB)
+        content = await file.read()
+        if len(content) > 10 * 1024 * 1024:  # 10MB
+            raise HTTPException(status_code=400, detail="El archivo PDF no debe superar los 10MB")
+
+        # Extraer texto del PDF
+        try:
+            pdf_file = BytesIO(content)
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+
+            # Extraer texto de todas las páginas
+            text = ""
+            num_pages = len(pdf_reader.pages)
+            print(f"PDF tiene {num_pages} páginas")
+
+            for i, page in enumerate(pdf_reader.pages):
+                page_text = page.extract_text()
+                print(f"Página {i+1}: {len(page_text)} caracteres")
+                text += page_text + "\n"
+
+            # Limpiar el texto
+            text = text.strip()
+            print(f"Texto total extraído: {len(text)} caracteres")
+
+            # Validar que el PDF contenga texto
+            if not text:
+                raise HTTPException(
+                    status_code=400,
+                    detail="El PDF no contiene texto extraíble. Asegúrate de que no sea una imagen escaneada."
+                )
+
+            # Validar longitud mínima del texto
+            if len(text) < 100:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"El texto extraído del PDF es muy corto ({len(text)} caracteres). Se requieren al menos 100 caracteres."
+                )
+
+        except PyPDF2.errors.PdfReadError as e:
+            print(f"Error PyPDF2: {str(e)}")
+            raise HTTPException(status_code=400, detail="Error al leer el archivo PDF. El archivo puede estar corrupto.")
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"Error inesperado al procesar PDF: {type(e).__name__}: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Error al procesar el PDF: {str(e)}")
+
+        # Convertir ai_provider string a enum
+        try:
+            provider_enum = AIProvider(ai_provider)
+        except ValueError:
+            provider_enum = AIProvider.OLLAMA
+
+        print(f"Generando resumen con {provider_enum}, modelo: {model_name}")
+
+        # Generar resumen
+        result = await content_generator.generate_summary(
+            text=text,
+            length=length,
+            provider=provider_enum,
+            model_name=model_name
+        )
+
+        print(f"Resultado de IA: {result}")
+
+        # Verificar que el resultado tenga contenido
+        if not result.get("content"):
+            raise HTTPException(
+                status_code=500,
+                detail="La IA no generó contenido. Intenta con otro modelo o verifica que el servicio de IA esté funcionando."
+            )
+
+        activity = await save_activity_with_credits(
+            db=db,
+            user=current_user,
+            activity_type=ActivityType.SUMMARY,
+            request_data={
+                "title": f"Resumen de {file.filename}",
+                "ai_provider": provider_enum
+            },
+            generated_content=result
+        )
+
+        return ActivityResponse.from_orm(activity)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error general: {type(e).__name__}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -4,6 +4,7 @@ from typing import List, Optional
 from ..database import get_db
 from ..models.user import User, UserRole
 from ..models.activity import Activity, ActivityType
+from ..models.credit import CreditTransaction
 from ..schemas.activity import ActivityResponse, ActivityUpdate
 from ..utils.auth import get_current_active_user, get_current_user_optional
 
@@ -150,6 +151,10 @@ async def delete_activity(
     if activity.creator_id != current_user.id and current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="No tienes permiso para eliminar esta actividad")
 
+    # Eliminar primero las transacciones de crédito asociadas
+    db.query(CreditTransaction).filter(CreditTransaction.activity_id == activity_id).delete()
+
+    # Ahora eliminar la actividad
     db.delete(activity)
     db.commit()
 

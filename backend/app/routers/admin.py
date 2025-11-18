@@ -403,6 +403,10 @@ async def delete_activity(
             detail="Actividad no encontrada"
         )
 
+    # Eliminar primero las transacciones de crédito asociadas
+    db.query(CreditTransaction).filter(CreditTransaction.activity_id == activity_id).delete()
+
+    # Ahora eliminar la actividad
     db.delete(activity)
     db.commit()
 

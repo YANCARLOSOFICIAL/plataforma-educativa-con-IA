@@ -72,18 +72,27 @@ IMPORTANTE: Responde SOLO con el JSON, sin texto adicional.
         }
 
         prompt = f"""
-Por favor, crea {length_instructions.get(length, length_instructions['medium'])} del siguiente texto:
+Crea {length_instructions.get(length, length_instructions['medium'])} del siguiente texto.
+
+INSTRUCCIONES IMPORTANTES:
+1. El resumen DEBE estar escrito en ESPAÑOL, independientemente del idioma del texto original.
+2. Escribe de forma DIRECTA sobre el contenido, NO uses frases como "el documento describe", "el texto habla de", "este proyecto trata sobre", etc.
+3. Presenta la información de manera clara y amena, como si estuvieras explicando el tema a alguien.
+4. Enfócate en el CONTENIDO y las IDEAS principales, no en describir el documento.
+5. Usa un tono natural y accesible.
+
+Texto a resumir:
 
 {text}
 
 Presenta el resumen en formato JSON:
 {{
-    "summary": "El texto del resumen aquí",
-    "key_points": ["Punto clave 1", "Punto clave 2", "Punto clave 3"],
+    "summary": "Resumen directo del contenido en español, sin mencionar que es un documento o texto",
+    "key_points": ["Idea principal 1", "Idea principal 2", "Idea principal 3"],
     "word_count": número de palabras del resumen
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+IMPORTANTE: Responde SOLO con el JSON. Todo en ESPAÑOL.
 """
 
         result = await ai_service.generate_content(
