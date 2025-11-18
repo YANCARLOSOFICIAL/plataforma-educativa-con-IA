@@ -4,6 +4,17 @@ from ..models.activity import AIProvider
 import json
 
 
+JSON_FORMAT_INSTRUCTIONS = """
+FORMATO DE RESPUESTA:
+- Responde ÚNICAMENTE con JSON válido
+- NO incluyas texto adicional antes o después del JSON
+- NO uses comillas simples ('), usa comillas dobles (")
+- NO incluyas comas al final del último elemento
+- Asegúrate de cerrar todas las llaves y corchetes
+- NO incluyas comentarios en el JSON
+"""
+
+
 class ContentGenerator:
     """
     Servicio para generar diferentes tipos de contenido educativo
@@ -16,16 +27,27 @@ class ContentGenerator:
         question_types: List[str],
         grade_level: str,
         provider: AIProvider,
-        model_name: str = None
+        model_name: str = None,
+        question_distribution: Dict[str, int] = None
     ) -> Dict[str, Any]:
         """
         Genera un examen con diferentes tipos de preguntas
         """
+        # Si hay distribución específica, usarla; sino, distribuir equitativamente
+        if question_distribution:
+            distribution_text = "\n".join([
+                f"- {question_distribution.get(qtype, 0)} preguntas de tipo '{qtype}'"
+                for qtype in question_types
+            ])
+            distribution_info = f"\nDistribución específica de preguntas:\n{distribution_text}"
+        else:
+            distribution_info = f"\nDistribuir las {num_questions} preguntas equitativamente entre los tipos: {', '.join(question_types)}"
+
         prompt = f"""
 Crea un examen sobre el tema: {topic}
 Nivel académico: {grade_level}
-Número de preguntas: {num_questions}
-Tipos de preguntas a incluir: {', '.join(question_types)}
+Número total de preguntas: {num_questions}
+{distribution_info}
 
 Genera el examen en formato JSON con la siguiente estructura:
 {{
@@ -41,10 +63,14 @@ Genera el examen en formato JSON con la siguiente estructura:
             "points": 1
         }}
     ],
-    "total_points": 10
+    "total_points": {num_questions}
 }}
 
-IMPORTANTE: Responde SOLO con el JSON, sin texto adicional.
+IMPORTANTE:
+- Respeta EXACTAMENTE la distribución de preguntas solicitada.
+- El total de preguntas DEBE ser exactamente {num_questions}.
+
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -92,7 +118,8 @@ Presenta el resumen en formato JSON:
     "word_count": número de palabras del resumen
 }}
 
-IMPORTANTE: Responde SOLO con el JSON. Todo en ESPAÑOL.
+Todo en ESPAÑOL.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -138,7 +165,7 @@ Estructura la actividad en formato JSON:
     "extensions": "Actividades de extensión o adaptaciones"
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -152,6 +179,7 @@ IMPORTANTE: Responde SOLO con el JSON.
     async def generate_rubric(
         self,
         topic: str,
+        faculty: str,
         career: str,
         semester: str,
         objectives: List[str],
@@ -165,6 +193,7 @@ IMPORTANTE: Responde SOLO con el JSON.
         prompt = f"""
 Crea una rúbrica de evaluación para:
 - Tema: {topic}
+- Facultad: {faculty}
 - Carrera: {career}
 - Semestre: {semester}
 - Objetivos: {', '.join(objectives)}
@@ -204,7 +233,7 @@ Formato JSON:
     "total_points": 100
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -244,7 +273,7 @@ Proporciona la corrección en formato JSON:
     "suggestions": ["Sugerencia de mejora 1", "Sugerencia 2"]
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -283,7 +312,7 @@ Formato JSON:
     ]
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -318,7 +347,7 @@ Formato JSON:
     "closing": "Despedida apropiada"
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -360,7 +389,7 @@ Formato JSON:
     ]
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -399,7 +428,7 @@ Formato JSON:
     "discussion_questions": ["Pregunta 1", "Pregunta 2", "Pregunta 3"]
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -450,7 +479,7 @@ Formato JSON:
     "grid_size": {{"rows": 15, "cols": 15}}
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(
@@ -461,6 +490,24 @@ IMPORTANTE: Responde SOLO con el JSON.
 
         return self._normalize_result(result)
 
+    def _clean_json_string(self, content: str) -> str:
+        """Clean and extract JSON from AI response that might contain extra text."""
+        # Intentar encontrar el JSON dentro del texto
+        content = content.strip()
+
+        # Buscar el primer { y el último }
+        first_brace = content.find('{')
+        last_brace = content.rfind('}')
+
+        if first_brace != -1 and last_brace != -1 and first_brace < last_brace:
+            content = content[first_brace:last_brace + 1]
+
+        # Reemplazar comillas simples por dobles (común en respuestas de IA)
+        # pero solo fuera de strings para evitar romper el contenido
+        # Esta es una solución simple, puede necesitar refinamiento
+
+        return content
+
     def _normalize_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """If the provider returned content as a JSON string, parse it into a dict.
 
@@ -469,10 +516,24 @@ IMPORTANTE: Responde SOLO con el JSON.
         content = result.get("content")
         if isinstance(content, str):
             try:
+                # Intentar parsear directamente
                 parsed = json.loads(content)
                 result["content"] = parsed
-            except Exception:
+            except json.JSONDecodeError as e:
+                # Si falla, intentar limpiar el JSON primero
+                try:
+                    cleaned_content = self._clean_json_string(content)
+                    parsed = json.loads(cleaned_content)
+                    result["content"] = parsed
+                except Exception as clean_error:
+                    # Si aún falla, registrar el error y mantener el contenido original
+                    print(f"Error parsing JSON: {e}")
+                    print(f"Error after cleaning: {clean_error}")
+                    print(f"Content preview: {content[:500]}...")
+                    result["content"] = {"error": "Failed to parse JSON", "raw_content": content}
+            except Exception as e:
                 # keep original string if parsing fails (some endpoints return plain text)
+                print(f"Unexpected error parsing content: {e}")
                 result["content"] = content
         return result
 
@@ -508,7 +569,7 @@ Formato JSON:
     ]
 }}
 
-IMPORTANTE: Responde SOLO con el JSON.
+{JSON_FORMAT_INSTRUCTIONS}
 """
 
         result = await ai_service.generate_content(

@@ -86,6 +86,7 @@ export interface ExamRequest {
   topic: string;
   num_questions: number;
   question_types: string[];
+  question_distribution?: Record<string, number>;
   grade_level?: string;
   ai_provider: AIProvider;
   model_name?: string;
@@ -109,6 +110,7 @@ export interface ClassActivityRequest {
 
 export interface RubricRequest {
   topic: string;
+  faculty: string;
   career: string;
   semester: string;
   objectives: string[];

@@ -12,11 +12,91 @@ import { Loader2, Plus, X } from 'lucide-react';
 
 interface FormData {
   topic: string;
+  faculty: string;
   career: string;
   semester: string;
   objectives: { value: string }[];
   criteria: { value: string }[];
 }
+
+const FACULTY_OPTIONS = [
+  { value: 'ingenieria', label: 'Ingeniería' },
+  { value: 'ciencias', label: 'Ciencias' },
+  { value: 'humanidades', label: 'Humanidades y Letras' },
+  { value: 'salud', label: 'Ciencias de la Salud' },
+  { value: 'economia', label: 'Economía y Negocios' },
+  { value: 'derecho', label: 'Derecho' },
+  { value: 'educacion', label: 'Educación' },
+  { value: 'arte', label: 'Arte y Diseño' },
+];
+
+const CAREER_OPTIONS: Record<string, { value: string; label: string }[]> = {
+  ingenieria: [
+    { value: 'sistemas', label: 'Ingeniería en Sistemas' },
+    { value: 'civil', label: 'Ingeniería Civil' },
+    { value: 'industrial', label: 'Ingeniería Industrial' },
+    { value: 'electronica', label: 'Ingeniería Electrónica' },
+    { value: 'mecanica', label: 'Ingeniería Mecánica' },
+    { value: 'quimica', label: 'Ingeniería Química' },
+  ],
+  ciencias: [
+    { value: 'matematicas', label: 'Matemáticas' },
+    { value: 'fisica', label: 'Física' },
+    { value: 'quimica', label: 'Química' },
+    { value: 'biologia', label: 'Biología' },
+    { value: 'computacion', label: 'Ciencias de la Computación' },
+  ],
+  humanidades: [
+    { value: 'historia', label: 'Historia' },
+    { value: 'filosofia', label: 'Filosofía' },
+    { value: 'literatura', label: 'Literatura' },
+    { value: 'psicologia', label: 'Psicología' },
+    { value: 'sociologia', label: 'Sociología' },
+  ],
+  salud: [
+    { value: 'medicina', label: 'Medicina' },
+    { value: 'enfermeria', label: 'Enfermería' },
+    { value: 'odontologia', label: 'Odontología' },
+    { value: 'nutricion', label: 'Nutrición' },
+    { value: 'fisioterapia', label: 'Fisioterapia' },
+  ],
+  economia: [
+    { value: 'administracion', label: 'Administración de Empresas' },
+    { value: 'contaduria', label: 'Contaduría' },
+    { value: 'economia', label: 'Economía' },
+    { value: 'marketing', label: 'Marketing' },
+    { value: 'finanzas', label: 'Finanzas' },
+  ],
+  derecho: [
+    { value: 'derecho', label: 'Derecho' },
+    { value: 'criminologia', label: 'Criminología' },
+    { value: 'relaciones_internacionales', label: 'Relaciones Internacionales' },
+  ],
+  educacion: [
+    { value: 'pedagogia', label: 'Pedagogía' },
+    { value: 'educacion_inicial', label: 'Educación Inicial' },
+    { value: 'educacion_especial', label: 'Educación Especial' },
+  ],
+  arte: [
+    { value: 'diseno_grafico', label: 'Diseño Gráfico' },
+    { value: 'arquitectura', label: 'Arquitectura' },
+    { value: 'artes_visuales', label: 'Artes Visuales' },
+    { value: 'musica', label: 'Música' },
+  ],
+};
+
+const SEMESTER_OPTIONS = [
+  { value: '1', label: '1er Semestre' },
+  { value: '2', label: '2do Semestre' },
+  { value: '3', label: '3er Semestre' },
+  { value: '4', label: '4to Semestre' },
+  { value: '5', label: '5to Semestre' },
+  { value: '6', label: '6to Semestre' },
+  { value: '7', label: '7mo Semestre' },
+  { value: '8', label: '8vo Semestre' },
+  { value: '9', label: '9no Semestre' },
+  { value: '10', label: '10mo Semestre' },
+];
 
 export default function CreateRubricPage() {
   const router = useRouter();
@@ -25,18 +105,26 @@ export default function CreateRubricPage() {
   const [error, setError] = useState('');
   const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
   const [modelName, setModelName] = useState('qwen3:4b');
+  const [selectedFaculty, setSelectedFaculty] = useState('ingenieria');
 
   const {
     register,
     control,
     handleSubmit,
     formState: { errors },
+    watch,
+    setValue,
   } = useForm<FormData>({
     defaultValues: {
+      faculty: 'ingenieria',
+      career: 'sistemas',
+      semester: '3',
       objectives: [{ value: '' }],
       criteria: [{ value: '' }],
     },
   });
+
+  const watchedFaculty = watch('faculty');
 
   const { fields: objectiveFields, append: appendObjective, remove: removeObjective } = useFieldArray({
     control,
@@ -54,6 +142,16 @@ export default function CreateRubricPage() {
     }
   }, [user, router]);
 
+  // Actualizar carrera cuando cambia la facultad
+  useEffect(() => {
+    if (watchedFaculty && watchedFaculty !== selectedFaculty) {
+      setSelectedFaculty(watchedFaculty);
+      // Establecer la primera carrera de la facultad seleccionada
+      const firstCareer = CAREER_OPTIONS[watchedFaculty]?.[0]?.value || '';
+      setValue('career', firstCareer);
+    }
+  }, [watchedFaculty, selectedFaculty, setValue]);
+
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true);
@@ -70,6 +168,7 @@ export default function CreateRubricPage() {
 
       const request: RubricRequest = {
         topic: data.topic,
+        faculty: data.faculty,
         career: data.career,
         semester: data.semester,
         objectives,
@@ -102,33 +201,56 @@ export default function CreateRubricPage() {
             </div>
           )}
 
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              Tema/Actividad *
+            </label>
+            <input
+              {...register('topic', { required: 'El tema es requerido' })}
+              type="text"
+              className="input"
+              placeholder="Ej: Proyecto Final, Exposición, Trabajo de Investigación..."
+              autoFocus
+            />
+            {errors.topic && (
+              <p className="text-red-600 text-sm mt-1">{errors.topic.message}</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Tema/Actividad *
+                Facultad *
               </label>
-              <input
-                {...register('topic', { required: 'El tema es requerido' })}
-                type="text"
+              <select
+                {...register('faculty', { required: 'La facultad es requerida' })}
                 className="input"
-                placeholder="Ej: Proyecto Final"
-                autoFocus
-              />
-              {errors.topic && (
-                <p className="text-red-600 text-sm mt-1">{errors.topic.message}</p>
+              >
+                {FACULTY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {errors.faculty && (
+                <p className="text-red-600 text-sm mt-1">{errors.faculty.message}</p>
               )}
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Carrera/Materia *
+                Carrera *
               </label>
-              <input
+              <select
                 {...register('career', { required: 'La carrera es requerida' })}
-                type="text"
                 className="input"
-                placeholder="Ej: Ingeniería"
-              />
+              >
+                {(CAREER_OPTIONS[selectedFaculty] || []).map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
               {errors.career && (
                 <p className="text-red-600 text-sm mt-1">{errors.career.message}</p>
               )}
@@ -136,14 +258,18 @@ export default function CreateRubricPage() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Semestre/Nivel *
+                Semestre *
               </label>
-              <input
+              <select
                 {...register('semester', { required: 'El semestre es requerido' })}
-                type="text"
                 className="input"
-                placeholder="Ej: 3er Semestre"
-              />
+              >
+                {SEMESTER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
               {errors.semester && (
                 <p className="text-red-600 text-sm mt-1">{errors.semester.message}</p>
               )}

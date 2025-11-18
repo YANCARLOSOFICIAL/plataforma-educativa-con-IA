@@ -17,6 +17,13 @@ interface FormData {
   objectives: { value: string }[];
 }
 
+const GRADE_LEVEL_OPTIONS = [
+  { value: 'escuela', label: 'Escuela (Primaria)' },
+  { value: 'secundaria', label: 'Secundaria' },
+  { value: 'preparatoria', label: 'Preparatoria' },
+  { value: 'universitario', label: 'Universitario' },
+];
+
 export default function CreateClassActivityPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -33,6 +40,7 @@ export default function CreateClassActivityPage() {
   } = useForm<FormData>({
     defaultValues: {
       duration_minutes: 60,
+      grade_level: 'secundaria',
       objectives: [{ value: '' }],
     },
   });
@@ -136,12 +144,16 @@ export default function CreateClassActivityPage() {
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 Nivel Académico *
               </label>
-              <input
+              <select
                 {...register('grade_level', { required: 'El nivel es requerido' })}
-                type="text"
                 className="input"
-                placeholder="Ej: 5to Primaria, Secundaria..."
-              />
+              >
+                {GRADE_LEVEL_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
               {errors.grade_level && (
                 <p className="text-red-600 text-sm mt-1">{errors.grade_level.message}</p>
               )}

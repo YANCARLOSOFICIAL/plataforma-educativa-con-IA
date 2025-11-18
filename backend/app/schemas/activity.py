@@ -63,6 +63,7 @@ class ExamRequest(BaseModel):
     topic: str
     num_questions: int = 10
     question_types: list[str] = ["multiple_choice", "true_false", "short_answer"]
+    question_distribution: Optional[Dict[str, int]] = None
     grade_level: Optional[str] = None
     ai_provider: AIProvider = AIProvider.OLLAMA
     model_name: Optional[str] = None
@@ -86,6 +87,7 @@ class ClassActivityRequest(BaseModel):
 
 class RubricRequest(BaseModel):
     topic: str
+    faculty: str
     career: str
     semester: str
     objectives: list[str]

@@ -16,6 +16,13 @@ interface FormData {
   grade_level?: string;
 }
 
+const GRADE_LEVEL_OPTIONS = [
+  { value: 'escuela', label: 'Escuela (Primaria)' },
+  { value: 'secundaria', label: 'Secundaria' },
+  { value: 'preparatoria', label: 'Preparatoria' },
+  { value: 'universitario', label: 'Universitario' },
+];
+
 export default function CreateSlidesPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -31,6 +38,7 @@ export default function CreateSlidesPage() {
   } = useForm<FormData>({
     defaultValues: {
       num_slides: 10,
+      grade_level: 'secundaria',
     },
   });
 
@@ -117,14 +125,18 @@ export default function CreateSlidesPage() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              Nivel Académico (Opcional)
+              Nivel Académico
             </label>
-            <input
+            <select
               {...register('grade_level')}
-              type="text"
               className="input"
-              placeholder="Ej: Universitario, Profesional, Secundaria..."
-            />
+            >
+              {GRADE_LEVEL_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <AIProviderSelector
