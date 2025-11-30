@@ -293,11 +293,13 @@ Proporciona la corrección en formato JSON:
         model_name: str = None
     ) -> Dict[str, Any]:
         """
-        Genera contenido para diapositivas
+        Genera contenido para diapositivas con imágenes relevantes
         """
         prompt = f"""
 Crea el contenido para una presentación de {num_slides} diapositivas sobre: {topic}
 Nivel académico: {grade_level}
+
+IMPORTANTE: Para cada diapositiva, proporciona una búsqueda de imagen relevante en inglés que represente visualmente el contenido.
 
 Formato JSON:
 {{
@@ -307,10 +309,17 @@ Formato JSON:
             "slide_number": 1,
             "title": "Título de la diapositiva",
             "content": ["Punto 1", "Punto 2", "Punto 3"],
-            "notes": "Notas para el presentador"
+            "notes": "Notas para el presentador",
+            "image_search": "término de búsqueda en inglés para encontrar imagen relevante",
+            "design_style": "modern" o "minimal" o "colorful" o "professional"
         }}
     ]
 }}
+
+INSTRUCCIONES PARA image_search:
+- Debe ser un término simple y específico en INGLÉS
+- Describe lo que se debe ver en la imagen (ej: "renewable energy solar panels", "ancient rome colosseum", "marketing strategy meeting")
+- Evita términos muy genéricos, sé específico al tema de la diapositiva
 
 {JSON_FORMAT_INSTRUCTIONS}
 """
@@ -321,7 +330,33 @@ Formato JSON:
             model_name=model_name
         )
 
-        return self._normalize_result(result)
+        normalized_result = self._normalize_result(result)
+
+        # Buscar imágenes para cada diapositiva
+        try:
+            from .image_search_service import image_search_service
+
+            content = normalized_result.get("content", {})
+            slides = content.get("slides", [])
+
+            # Buscar imágenes para cada diapositiva
+            for slide in slides:
+                image_search = slide.get("image_search", "")
+                if image_search:
+                    image_data = await image_search_service.search_image(
+                        query=image_search,
+                        orientation="landscape"
+                    )
+                    if image_data:
+                        slide["image"] = image_data
+
+            normalized_result["content"] = content
+
+        except Exception as e:
+            print(f"Error buscando imágenes para diapositivas: {e}")
+            # Continuar sin imágenes si hay error
+
+        return normalized_result
 
     async def generate_email(
         self,

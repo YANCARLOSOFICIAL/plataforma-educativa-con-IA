@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     FROM_EMAIL: str = "noreply@tudominio.com"  # Cambiar por tu dominio verificado
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # Image Search APIs (Opcional)
+    UNSPLASH_ACCESS_KEY: Optional[str] = None
+    PEXELS_API_KEY: Optional[str] = None
+
     class Config:
         env_file = ".env"
 

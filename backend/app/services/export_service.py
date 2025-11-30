@@ -11,6 +11,8 @@ from io import BytesIO
 from typing import Dict, Any, List, Tuple
 import json
 import random
+import httpx
+from PIL import Image
 
 
 class ExportService:
@@ -227,13 +229,49 @@ class ExportService:
 
     def _create_title_slide(self, slide, slide_data: Dict, colors: Dict, main_title: str):
         """
-        Crea la diapositiva de título con diseño profesional
+        Crea la diapositiva de título con diseño profesional, con imagen de fondo si está disponible
         """
-        # Fondo de color sólido
-        background = slide.background
-        fill = background.fill
-        fill.solid()
-        fill.fore_color.rgb = PptxRGBColor(*colors["primary"])
+        # Verificar si hay imagen para la diapositiva de título
+        has_image = slide_data.get("image") and slide_data["image"].get("url")
+
+        if has_image:
+            # Insertar imagen de fondo
+            try:
+                image_url = slide_data["image"]["url"]
+                with httpx.Client(timeout=10) as client:
+                    response = client.get(image_url)
+                    if response.status_code == 200:
+                        image_stream = BytesIO(response.content)
+
+                        # Insertar imagen de fondo
+                        left = PptxInches(0)
+                        top = PptxInches(0)
+                        width = PptxInches(10)
+                        height = PptxInches(5.625)
+
+                        slide.shapes.add_picture(image_stream, left, top, width, height)
+
+                        # NOTA: Overlay desactivado temporalmente para debug
+                        # El overlay estaba cubriendo las imágenes
+                        # TODO: Implementar overlay correctamente si es necesario
+                        # overlay = slide.shapes.add_shape(1, left, top, width, height)
+                        # overlay.fill.solid()
+                        # overlay.fill.fore_color.rgb = PptxRGBColor(0, 0, 0)
+                        # overlay.fill.transparency = 0.5  # 50% de transparencia
+                        # overlay.line.fill.background()
+            except Exception as e:
+                print(f"Error insertando imagen de fondo en título: {e}")
+                # Usar fondo de color sólido como fallback
+                background = slide.background
+                fill = background.fill
+                fill.solid()
+                fill.fore_color.rgb = PptxRGBColor(*colors["primary"])
+        else:
+            # Fondo de color sólido
+            background = slide.background
+            fill = background.fill
+            fill.solid()
+            fill.fore_color.rgb = PptxRGBColor(*colors["primary"])
 
         # Barra decorativa superior
         left = PptxInches(0)
@@ -244,6 +282,19 @@ class ExportService:
         shape.fill.solid()
         shape.fill.fore_color.rgb = PptxRGBColor(*colors["accent"])
         shape.line.fill.background()
+
+        # Fondo semi-transparente detrás del título para legibilidad (solo si hay imagen)
+        if has_image:
+            title_bg_left = PptxInches(0.5)
+            title_bg_top = PptxInches(1.7)
+            title_bg_width = PptxInches(9)
+            title_bg_height = PptxInches(2.2)
+
+            title_bg = slide.shapes.add_shape(1, title_bg_left, title_bg_top, title_bg_width, title_bg_height)
+            title_bg.fill.solid()
+            title_bg.fill.fore_color.rgb = PptxRGBColor(0, 0, 0)
+            title_bg.fill.transparency = 0.3  # 30% transparente
+            title_bg.line.fill.background()
 
         # Título principal (centrado verticalmente)
         left = PptxInches(1)
@@ -277,12 +328,154 @@ class ExportService:
                 p.text = content_items[0] if len(content_items) > 0 else ""
                 p.alignment = PP_ALIGN.CENTER
                 p.font.size = PptxPt(20)
-                p.font.color.rgb = PptxRGBColor(*colors["background"])
+                p.font.color.rgb = PptxRGBColor(255, 255, 255)
                 p.font.name = "Segoe UI Light"
+
+    async def _download_image(self, url: str) -> BytesIO:
+        """
+        Descarga una imagen desde una URL y la retorna como BytesIO
+        """
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.get(url)
+                if response.status_code == 200:
+                    return BytesIO(response.content)
+        except Exception as e:
+            print(f"Error descargando imagen: {e}")
+        return None
 
     def _create_content_slide(self, slide, slide_data: Dict, colors: Dict):
         """
-        Crea una diapositiva de contenido con diseño moderno y limpio
+        Crea una diapositiva de contenido con diseño moderno y limpio, incluyendo imagen si está disponible
+        """
+        # Verificar si hay imagen
+        has_image = slide_data.get("image") and slide_data["image"].get("url")
+
+        if has_image:
+            # Layout con imagen lateral (estilo Gamma AI)
+            self._create_content_slide_with_image(slide, slide_data, colors)
+        else:
+            # Layout sin imagen (diseño actual)
+            self._create_content_slide_no_image(slide, slide_data, colors)
+
+    def _create_content_slide_with_image(self, slide, slide_data: Dict, colors: Dict):
+        """
+        Crea una diapositiva con imagen lateral (estilo Gamma AI)
+        """
+        # Fondo con gradiente suave
+        background = slide.background
+        fill = background.fill
+        fill.solid()
+
+        # Determinar color de fondo basado en design_style
+        design_style = slide_data.get("design_style", "modern")
+
+        if design_style == "minimal":
+            fill.fore_color.rgb = PptxRGBColor(249, 250, 251)
+        elif design_style == "colorful":
+            fill.fore_color.rgb = PptxRGBColor(255, 251, 235)
+        elif design_style == "professional":
+            fill.fore_color.rgb = PptxRGBColor(15, 23, 42)
+        else:  # modern
+            fill.fore_color.rgb = PptxRGBColor(255, 255, 255)
+
+        # Imagen lateral izquierda (50% de la diapositiva)
+        try:
+            image_url = slide_data["image"]["url"]
+
+            # Descargar imagen sincrónicamente usando httpx
+            with httpx.Client(timeout=15, follow_redirects=True) as client:
+                response = client.get(image_url)
+
+                if response.status_code == 200:
+                    image_stream = BytesIO(response.content)
+
+                    # Insertar imagen
+                    left = PptxInches(0)
+                    top = PptxInches(0)
+                    width = PptxInches(5)  # Mitad de la diapositiva (10 inches total)
+                    height = PptxInches(5.625)  # Altura completa
+
+                    slide.shapes.add_picture(image_stream, left, top, width, height)
+        except Exception as e:
+            print(f"Error insertando imagen en diapositiva: {e}")
+
+        # Contenido en la mitad derecha
+        content_left = PptxInches(5.2)
+        content_width = PptxInches(4.5)
+
+        # Fondo semi-transparente detrás del área de contenido para legibilidad
+        content_bg_left = PptxInches(5)
+        content_bg_top = PptxInches(0)
+        content_bg_width = PptxInches(5)
+        content_bg_height = PptxInches(5.625)
+
+        content_bg = slide.shapes.add_shape(1, content_bg_left, content_bg_top, content_bg_width, content_bg_height)
+        content_bg.fill.solid()
+
+        # Color de fondo según el estilo
+        if design_style == "professional":
+            content_bg.fill.fore_color.rgb = PptxRGBColor(15, 23, 42)
+            content_bg.fill.transparency = 0.1  # Casi opaco para fondo oscuro
+        elif design_style == "minimal":
+            content_bg.fill.fore_color.rgb = PptxRGBColor(255, 255, 255)
+            content_bg.fill.transparency = 0.05  # Casi opaco
+        else:
+            content_bg.fill.fore_color.rgb = PptxRGBColor(255, 255, 255)
+            content_bg.fill.transparency = 0.1  # Ligeramente transparente
+
+        content_bg.line.fill.background()
+
+        # Título de la diapositiva
+        title_top = PptxInches(0.8)
+        title_height = PptxInches(1)
+        title_box = slide.shapes.add_textbox(content_left, title_top, content_width, title_height)
+        text_frame = title_box.text_frame
+        text_frame.word_wrap = True
+
+        p = text_frame.paragraphs[0]
+        p.text = slide_data.get("title", "")
+        p.font.size = PptxPt(32)
+        p.font.bold = True
+
+        # Color del texto según el estilo
+        if design_style == "professional":
+            p.font.color.rgb = PptxRGBColor(255, 255, 255)
+        else:
+            p.font.color.rgb = PptxRGBColor(*colors["primary"])
+        p.font.name = "Segoe UI"
+
+        # Puntos de contenido
+        content_items = slide_data.get("content", [])
+
+        content_top = PptxInches(2.2)
+        content_height = PptxInches(3)
+        content_box = slide.shapes.add_textbox(content_left, content_top, content_width, content_height)
+        text_frame = content_box.text_frame
+        text_frame.word_wrap = True
+
+        for idx, item in enumerate(content_items[:5]):  # Máximo 5 items
+            if idx == 0:
+                p = text_frame.paragraphs[0]
+            else:
+                p = text_frame.add_paragraph()
+
+            p.text = item
+            p.level = 0
+            p.font.size = PptxPt(14)
+
+            if design_style == "professional":
+                p.font.color.rgb = PptxRGBColor(226, 232, 240)
+            else:
+                p.font.color.rgb = PptxRGBColor(*colors["text_dark"])
+
+            p.font.name = "Segoe UI"
+            p.space_before = PptxPt(8)
+            p.bullet = True
+
+    def _create_content_slide_no_image(self, slide, slide_data: Dict, colors: Dict):
+        """
+        Crea una diapositiva sin imagen (diseño original mejorado)
         """
         # Fondo claro
         background = slide.background

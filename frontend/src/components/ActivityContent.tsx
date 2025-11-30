@@ -271,33 +271,125 @@ function WritingCorrectionContent({ content }: { content: any }) {
 
 // Componente para Diapositivas
 function SlidesContent({ content }: { content: any }) {
+  // Estilos de diseño para cada diapositiva
+  const getDesignStyles = (style: string = 'modern') => {
+    const styles = {
+      modern: {
+        gradient: 'from-blue-500 via-purple-500 to-pink-500',
+        textColor: 'text-white',
+        accentColor: 'bg-white/20'
+      },
+      minimal: {
+        gradient: 'from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900',
+        textColor: 'text-gray-900 dark:text-white',
+        accentColor: 'bg-gray-900/10 dark:bg-white/10'
+      },
+      colorful: {
+        gradient: 'from-orange-400 via-red-500 to-pink-500',
+        textColor: 'text-white',
+        accentColor: 'bg-white/20'
+      },
+      professional: {
+        gradient: 'from-slate-700 via-slate-800 to-slate-900',
+        textColor: 'text-white',
+        accentColor: 'bg-white/10'
+      }
+    };
+    return styles[style as keyof typeof styles] || styles.modern;
+  };
+
   return (
-    <div className="space-y-4">
-      {content.slides?.map((slide: any, idx: number) => (
-        <div key={idx} className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-10 h-10 bg-blue-600 dark:bg-blue-700 text-white rounded-lg flex items-center justify-center font-bold">
-              {slide.slide_number || idx + 1}
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{slide.title}</h3>
-              <ul className="space-y-2">
-                {slide.content?.map((point: string, pointIdx: number) => (
-                  <li key={pointIdx} className="flex items-start gap-2">
-                    <span className="text-blue-600 dark:text-blue-400 mt-1">•</span>
-                    <span className="text-gray-700 dark:text-gray-300">{point}</span>
-                  </li>
-                ))}
-              </ul>
-              {slide.notes && (
-                <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
-                  <p className="text-sm italic text-gray-600 dark:text-gray-400">Notas: {slide.notes}</p>
+    <div className="space-y-6">
+      {content.slides?.map((slide: any, idx: number) => {
+        const designStyle = getDesignStyles(slide.design_style);
+        const hasImage = slide.image?.url;
+
+        return (
+          <div
+            key={idx}
+            className="group relative overflow-hidden rounded-2xl shadow-2xl transition-all duration-300 hover:shadow-3xl hover:scale-[1.02]"
+          >
+            {/* Layout con imagen y contenido lado a lado (estilo Gamma AI) */}
+            <div className={`relative min-h-[500px] bg-gradient-to-br ${designStyle.gradient}`}>
+              <div className={`grid ${hasImage ? 'md:grid-cols-2' : 'grid-cols-1'} gap-6 h-full`}>
+
+                {/* Imagen de fondo o lateral */}
+                {hasImage && (
+                  <div className="relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20 z-10"></div>
+                    <img
+                      src={slide.image.url}
+                      alt={slide.image.alt || slide.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    {/* Créditos del fotógrafo */}
+                    {slide.image.photographer && slide.image.source !== 'placeholder' && (
+                      <div className="absolute bottom-2 left-2 z-20">
+                        <a
+                          href={slide.image.photographer_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-white/80 hover:text-white bg-black/30 backdrop-blur-sm px-2 py-1 rounded"
+                        >
+                          📷 {slide.image.photographer}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Contenido de la diapositiva */}
+                <div className={`flex flex-col justify-center p-8 md:p-12 ${hasImage ? '' : 'col-span-full'}`}>
+                  {/* Número de diapositiva */}
+                  <div className="mb-6">
+                    <span className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${designStyle.accentColor} ${designStyle.textColor} font-bold text-lg`}>
+                      {slide.slide_number || idx + 1}
+                    </span>
+                  </div>
+
+                  {/* Título de la diapositiva */}
+                  <h3 className={`text-3xl md:text-4xl font-bold ${designStyle.textColor} mb-6 leading-tight`}>
+                    {slide.title}
+                  </h3>
+
+                  {/* Puntos de contenido */}
+                  <ul className="space-y-4">
+                    {slide.content?.map((point: string, pointIdx: number) => (
+                      <li key={pointIdx} className="flex items-start gap-3 group/item">
+                        <span className={`flex-shrink-0 w-2 h-2 rounded-full ${designStyle.accentColor} mt-2.5`}></span>
+                        <span className={`text-lg ${designStyle.textColor} opacity-90 leading-relaxed`}>
+                          {point}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Notas del presentador */}
+                  {slide.notes && (
+                    <div className={`mt-8 pt-6 border-t ${designStyle.accentColor}`}>
+                      <p className={`text-sm italic ${designStyle.textColor} opacity-75`}>
+                        💡 {slide.notes}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              {/* Decoración adicional - formas geométricas */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -z-0"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/5 rounded-full blur-2xl -z-0"></div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
+
+      {/* Información adicional */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 text-center">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          💡 <strong>Tip:</strong> Usa los botones de exportación arriba para descargar esta presentación en formato PowerPoint o PDF
+        </p>
+      </div>
     </div>
   );
 }
