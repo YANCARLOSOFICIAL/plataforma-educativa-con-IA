@@ -46,12 +46,21 @@ class ActivityResponse(ActivityBase):
         happens pydantic expects a dict but receives a str, producing the ValidationError
         seen in the logs. This validator attempts to json.loads the string before
         regular validation.
+
+        Also handles lists from Ollama responses by wrapping them in a dict.
         """
+        # Handle lists (wrap them in a dict)
+        if isinstance(v, list):
+            return {"items": v}
+
         if isinstance(v, str):
             try:
                 import json
-
-                return json.loads(v)
+                parsed = json.loads(v)
+                # If parsed content is a list, wrap it in a dict
+                if isinstance(parsed, list):
+                    return {"items": parsed}
+                return parsed
             except Exception:
                 # If parsing fails, return original value and let pydantic raise a helpful error
                 return v

@@ -518,13 +518,21 @@ Formato JSON:
             try:
                 # Intentar parsear directamente
                 parsed = json.loads(content)
-                result["content"] = parsed
+                # Si el parsed es una lista, envolverla en un dict
+                if isinstance(parsed, list):
+                    result["content"] = {"items": parsed}
+                else:
+                    result["content"] = parsed
             except json.JSONDecodeError as e:
                 # Si falla, intentar limpiar el JSON primero
                 try:
                     cleaned_content = self._clean_json_string(content)
                     parsed = json.loads(cleaned_content)
-                    result["content"] = parsed
+                    # Si el parsed es una lista, envolverla en un dict
+                    if isinstance(parsed, list):
+                        result["content"] = {"items": parsed}
+                    else:
+                        result["content"] = parsed
                 except Exception as clean_error:
                     # Si aún falla, registrar el error y mantener el contenido original
                     print(f"Error parsing JSON: {e}")
@@ -535,6 +543,9 @@ Formato JSON:
                 # keep original string if parsing fails (some endpoints return plain text)
                 print(f"Unexpected error parsing content: {e}")
                 result["content"] = content
+        # También manejar el caso cuando el content ya viene como lista (no como string)
+        elif isinstance(content, list):
+            result["content"] = {"items": content}
         return result
 
     async def generate_word_search(

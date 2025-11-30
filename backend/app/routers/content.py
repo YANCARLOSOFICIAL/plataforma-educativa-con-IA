@@ -32,9 +32,18 @@ def _parse_content_safely(content):
     """Safely parse content to dict, handling malformed JSON"""
     if isinstance(content, dict):
         return content
+
+    # Handle lists (wrap them in a dict)
+    if isinstance(content, list):
+        return {"items": content}
+
     if isinstance(content, str):
         try:
-            return json.loads(content)
+            parsed = json.loads(content)
+            # If parsed content is a list, wrap it in a dict
+            if isinstance(parsed, list):
+                return {"items": parsed}
+            return parsed
         except json.JSONDecodeError as e:
             # Try to extract JSON from the string
             content = content.strip()
@@ -43,7 +52,11 @@ def _parse_content_safely(content):
 
             if first_brace != -1 and last_brace != -1 and first_brace < last_brace:
                 try:
-                    return json.loads(content[first_brace:last_brace + 1])
+                    parsed = json.loads(content[first_brace:last_brace + 1])
+                    # If parsed content is a list, wrap it in a dict
+                    if isinstance(parsed, list):
+                        return {"items": parsed}
+                    return parsed
                 except:
                     pass
 
@@ -135,6 +148,83 @@ async def generate_exam(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/exam-file", response_model=ActivityResponse)
+async def generate_exam_from_file(
+    file: UploadFile = File(...),
+    topic: str = Form(...),
+    num_questions: int = Form(10),
+    grade_level: str = Form(None),
+    ai_provider: str = Form(...),
+    model_name: str = Form(None),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Genera un examen desde un archivo PDF o Word
+    """
+    try:
+        # Leer el contenido del archivo
+        content = await file.read()
+
+        # Extraer texto según el tipo de archivo
+        text = ""
+        file_extension = file.filename.split('.')[-1].lower()
+
+        if file_extension == 'pdf':
+            # Extraer texto de PDF
+            pdf_file = io.BytesIO(content)
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            for page in pdf_reader.pages:
+                text += page.extract_text() + "\n"
+
+        elif file_extension in ['doc', 'docx']:
+            # Extraer texto de Word
+            doc_file = io.BytesIO(content)
+            doc = Document(doc_file)
+            for paragraph in doc.paragraphs:
+                text += paragraph.text + "\n"
+
+        else:
+            raise HTTPException(status_code=400, detail="Formato de archivo no soportado. Use PDF o Word (.doc, .docx)")
+
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo")
+
+        # Convertir ai_provider string a enum
+        from ..models.activity import AIProvider
+        provider_enum = AIProvider(ai_provider)
+
+        # Generar examen usando el texto extraído como contexto
+        prompt_with_context = f"Basándote en el siguiente contenido extraído de un documento:\n\n{text}\n\nGenera un examen sobre: {topic}"
+
+        result = await content_generator.generate_exam(
+            topic=prompt_with_context,
+            num_questions=num_questions,
+            question_types=["multiple_choice", "true_false", "short_answer"],
+            grade_level=grade_level or "General",
+            provider=provider_enum,
+            model_name=model_name
+        )
+
+        activity = await save_activity_with_credits(
+            db=db,
+            user=current_user,
+            activity_type=ActivityType.EXAM,
+            request_data={
+                "title": f"Examen: {topic} (desde {file.filename})",
+                "subject": topic,
+                "grade_level": grade_level,
+                "ai_provider": provider_enum
+            },
+            generated_content=result
+        )
+
+        return ActivityResponse.from_orm(activity)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/summary", response_model=ActivityResponse)
 async def generate_summary(
     request: SummaryRequest,
@@ -207,6 +297,83 @@ async def generate_class_activity(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/class-activity-file", response_model=ActivityResponse)
+async def generate_class_activity_from_file(
+    file: UploadFile = File(...),
+    topic: str = Form(...),
+    duration_minutes: int = Form(60),
+    grade_level: str = Form(...),
+    ai_provider: str = Form(...),
+    model_name: str = Form(None),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Genera una actividad de clase desde un archivo PDF o Word
+    """
+    try:
+        # Leer el contenido del archivo
+        content = await file.read()
+
+        # Extraer texto según el tipo de archivo
+        text = ""
+        file_extension = file.filename.split('.')[-1].lower()
+
+        if file_extension == 'pdf':
+            # Extraer texto de PDF
+            pdf_file = io.BytesIO(content)
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            for page in pdf_reader.pages:
+                text += page.extract_text() + "\n"
+
+        elif file_extension in ['doc', 'docx']:
+            # Extraer texto de Word
+            doc_file = io.BytesIO(content)
+            doc = Document(doc_file)
+            for paragraph in doc.paragraphs:
+                text += paragraph.text + "\n"
+
+        else:
+            raise HTTPException(status_code=400, detail="Formato de archivo no soportado. Use PDF o Word (.doc, .docx)")
+
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo")
+
+        # Convertir ai_provider string a enum
+        from ..models.activity import AIProvider
+        provider_enum = AIProvider(ai_provider)
+
+        # Generar actividad de clase usando el texto extraído como contexto
+        prompt_with_context = f"Basándote en el siguiente contenido extraído de un documento:\n\n{text}\n\nGenera una actividad de clase sobre: {topic}"
+
+        result = await content_generator.generate_class_activity(
+            topic=prompt_with_context,
+            duration_minutes=duration_minutes,
+            grade_level=grade_level,
+            objectives=[],
+            provider=provider_enum,
+            model_name=model_name
+        )
+
+        activity = await save_activity_with_credits(
+            db=db,
+            user=current_user,
+            activity_type=ActivityType.CLASS_ACTIVITY,
+            request_data={
+                "title": f"Actividad: {topic} (desde {file.filename})",
+                "subject": topic,
+                "grade_level": grade_level,
+                "ai_provider": provider_enum
+            },
+            generated_content=result
+        )
+
+        return ActivityResponse.from_orm(activity)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/rubric", response_model=ActivityResponse)
 async def generate_rubric(
     request: RubricRequest,
@@ -237,6 +404,86 @@ async def generate_rubric(
                 "subject": request.topic,
                 "grade_level": request.semester,
                 "ai_provider": request.ai_provider
+            },
+            generated_content=result
+        )
+
+        return ActivityResponse.from_orm(activity)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/rubric-file", response_model=ActivityResponse)
+async def generate_rubric_from_file(
+    file: UploadFile = File(...),
+    topic: str = Form(...),
+    faculty: str = Form(...),
+    career: str = Form(...),
+    semester: str = Form(...),
+    ai_provider: str = Form(...),
+    model_name: str = Form(None),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Genera una rúbrica de evaluación desde un archivo PDF o Word
+    """
+    try:
+        # Leer el contenido del archivo
+        content = await file.read()
+
+        # Extraer texto según el tipo de archivo
+        text = ""
+        file_extension = file.filename.split('.')[-1].lower()
+
+        if file_extension == 'pdf':
+            # Extraer texto de PDF
+            pdf_file = io.BytesIO(content)
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            for page in pdf_reader.pages:
+                text += page.extract_text() + "\n"
+
+        elif file_extension in ['doc', 'docx']:
+            # Extraer texto de Word
+            doc_file = io.BytesIO(content)
+            doc = Document(doc_file)
+            for paragraph in doc.paragraphs:
+                text += paragraph.text + "\n"
+
+        else:
+            raise HTTPException(status_code=400, detail="Formato de archivo no soportado. Use PDF o Word (.doc, .docx)")
+
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo")
+
+        # Convertir ai_provider string a enum
+        from ..models.activity import AIProvider
+        provider_enum = AIProvider(ai_provider)
+
+        # Generar rúbrica usando el texto extraído como contexto adicional
+        prompt_with_context = f"Basándote en el siguiente contenido extraído de un documento:\n\n{text}\n\nGenera una rúbrica de evaluación para: {topic}"
+
+        result = await content_generator.generate_rubric(
+            topic=prompt_with_context,
+            faculty=faculty,
+            career=career,
+            semester=semester,
+            objectives=[],
+            criteria=[],
+            provider=provider_enum,
+            model_name=model_name
+        )
+
+        activity = await save_activity_with_credits(
+            db=db,
+            user=current_user,
+            activity_type=ActivityType.RUBRIC,
+            request_data={
+                "title": f"Rúbrica: {topic} (desde {file.filename})",
+                "subject": topic,
+                "grade_level": semester,
+                "ai_provider": provider_enum
             },
             generated_content=result
         )

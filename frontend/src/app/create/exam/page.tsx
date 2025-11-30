@@ -8,7 +8,7 @@ import { contentAPI } from '@/lib/api';
 import { AIProvider, ExamRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
 import AIProviderSelector from '@/components/AIProviderSelector';
-import { FileQuestion, CheckCircle2 } from 'lucide-react';
+import { FileQuestion, CheckCircle2, Upload, FileText } from 'lucide-react';
 import { Button, Input, Card } from '@/components/ui';
 import { toast } from 'sonner';
 import PageTransition, { SlideIn } from '@/components/PageTransition';
@@ -19,6 +19,8 @@ interface FormData {
   question_types: string[];
   grade_level?: string;
 }
+
+type InputMode = 'form' | 'file';
 
 const QUESTION_TYPE_OPTIONS = [
   { value: 'multiple_choice', label: 'Selección Múltiple' },
@@ -40,6 +42,8 @@ export default function CreateExamPage() {
   const [error, setError] = useState('');
   const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
   const [modelName, setModelName] = useState('qwen3:4b');
+  const [inputMode, setInputMode] = useState<InputMode>('form');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [questionDistribution, setQuestionDistribution] = useState<Record<string, number>>({
     multiple_choice: 10,
     true_false: 0,
@@ -107,42 +111,95 @@ export default function CreateExamPage() {
   };
 
   const onSubmit = async (data: FormData) => {
-    // Validar que la distribución sea correcta
-    if (!isDistributionValid()) {
-      toast.error(`La suma de preguntas debe ser ${numQuestions}. Actualmente: ${getTotalDistributed()}`);
-      return;
-    }
     try {
       setLoading(true);
       setError('');
 
-      // Filtrar solo los tipos seleccionados en la distribución
-      const filteredDistribution: Record<string, number> = {};
-      selectedQuestionTypes.forEach((type) => {
-        if (questionDistribution[type] > 0) {
-          filteredDistribution[type] = questionDistribution[type];
-        }
-      });
-
-      const request: ExamRequest = {
-        topic: data.topic,
-        num_questions: data.num_questions,
-        question_types: data.question_types,
-        question_distribution: filteredDistribution,
-        grade_level: data.grade_level,
-        ai_provider: aiProvider,
-        model_name: modelName,
-      };
-
+      let activity;
       toast.loading('Generando examen con IA...', { id: 'exam-generation' });
-      const activity = await contentAPI.generateExam(request);
+
+      if (inputMode === 'file') {
+        // Validar que se haya seleccionado un archivo
+        if (!uploadedFile) {
+          throw new Error('Por favor selecciona un archivo PDF o Word');
+        }
+
+        // Crear FormData para enviar archivo
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        formData.append('topic', data.topic);
+        formData.append('num_questions', data.num_questions.toString());
+        if (data.grade_level) {
+          formData.append('grade_level', data.grade_level);
+        }
+        formData.append('ai_provider', aiProvider);
+        if (modelName) {
+          formData.append('model_name', modelName);
+        }
+
+        activity = await contentAPI.generateExamFromFile(formData);
+      } else {
+        // Validar que la distribución sea correcta
+        if (!isDistributionValid()) {
+          toast.error(`La suma de preguntas debe ser ${numQuestions}. Actualmente: ${getTotalDistributed()}`, { id: 'exam-generation' });
+          setLoading(false);
+          return;
+        }
+
+        // Filtrar solo los tipos seleccionados en la distribución
+        const filteredDistribution: Record<string, number> = {};
+        selectedQuestionTypes.forEach((type) => {
+          if (questionDistribution[type] > 0) {
+            filteredDistribution[type] = questionDistribution[type];
+          }
+        });
+
+        const request: ExamRequest = {
+          topic: data.topic,
+          num_questions: data.num_questions,
+          question_types: data.question_types,
+          question_distribution: filteredDistribution,
+          grade_level: data.grade_level,
+          ai_provider: aiProvider,
+          model_name: modelName,
+        };
+
+        activity = await contentAPI.generateExam(request);
+      }
+
       toast.success('¡Examen generado exitosamente!', { id: 'exam-generation' });
       router.push(`/activity/${activity.id}`);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || 'Error al generar el examen';
+      const errorMessage = err.response?.data?.detail || err.message || 'Error al generar el examen';
       setError(errorMessage);
       toast.error(errorMessage, { id: 'exam-generation' });
       setLoading(false);
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validar que sea PDF o Word
+      const validExtensions = ['.pdf', '.doc', '.docx'];
+      const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+
+      if (!validExtensions.includes(fileExtension)) {
+        setError('Por favor selecciona un archivo PDF o Word válido (.pdf, .doc, .docx)');
+        setUploadedFile(null);
+        return;
+      }
+
+      // Validar tamaño (máximo 10MB)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setError('El archivo no debe superar los 10MB');
+        setUploadedFile(null);
+        return;
+      }
+
+      setUploadedFile(file);
+      setError('');
     }
   };
 
@@ -174,6 +231,46 @@ export default function CreateExamPage() {
                 </div>
               )}
 
+              {/* Selector de modo de entrada */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+                  Método de entrada
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInputMode('form');
+                      setUploadedFile(null);
+                      setError('');
+                    }}
+                    className={`flex items-center justify-center gap-2 p-4 border-2 rounded-lg transition-all ${
+                      inputMode === 'form'
+                        ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
+                    }`}
+                  >
+                    <FileText className="w-5 h-5" />
+                    <span className="font-semibold">Formulario Completo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInputMode('file');
+                      setError('');
+                    }}
+                    className={`flex items-center justify-center gap-2 p-4 border-2 rounded-lg transition-all ${
+                      inputMode === 'file'
+                        ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
+                    }`}
+                  >
+                    <Upload className="w-5 h-5" />
+                    <span className="font-semibold">Subir PDF/Word</span>
+                  </button>
+                </div>
+              </div>
+
               <Input
                 {...register('topic', { required: 'El tema es requerido' })}
                 label="Tema del Examen"
@@ -202,71 +299,134 @@ export default function CreateExamPage() {
                 max="50"
               />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
-                  Tipos de Preguntas <span className="text-red-500">*</span>
-                </label>
-                <div className="space-y-3">
-                  {QUESTION_TYPE_OPTIONS.map((option) => (
-                    <label
-                      key={option.value}
-                      className="flex items-center p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-300 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all cursor-pointer group"
-                    >
-                      <input
-                        {...register('question_types')}
-                        type="checkbox"
-                        value={option.value}
-                        defaultChecked={option.value === 'multiple_choice'}
-                        className="w-5 h-5 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 mr-3"
-                      />
-                      <div className="flex items-center gap-2 flex-1">
-                        <CheckCircle2 className="w-5 h-5 text-primary-600 dark:text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <span className="text-gray-900 dark:text-white font-medium">{option.label}</span>
-                      </div>
+              {/* Tipos de preguntas solo en modo formulario */}
+              {inputMode === 'form' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+                      Tipos de Preguntas <span className="text-red-500">*</span>
                     </label>
-                  ))}
-                </div>
-              </div>
-
-              {selectedQuestionTypes.length > 0 && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
-                    Distribución de Preguntas <span className="text-red-500">*</span>
-                  </label>
-                  <div className="space-y-3">
-                    {selectedQuestionTypes.map((type) => {
-                      const option = QUESTION_TYPE_OPTIONS.find((opt) => opt.value === type);
-                      return (
-                        <div key={type} className="flex items-center gap-3">
-                          <label className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {option?.label}:
-                          </label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max={numQuestions}
-                            value={questionDistribution[type] || 0}
-                            onChange={(e) => handleDistributionChange(type, parseInt(e.target.value) || 0)}
-                            className="w-24"
+                    <div className="space-y-3">
+                      {QUESTION_TYPE_OPTIONS.map((option) => (
+                        <label
+                          key={option.value}
+                          className="flex items-center p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-300 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all cursor-pointer group"
+                        >
+                          <input
+                            {...register('question_types')}
+                            type="checkbox"
+                            value={option.value}
+                            defaultChecked={option.value === 'multiple_choice'}
+                            className="w-5 h-5 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 mr-3"
                           />
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="font-medium text-gray-700 dark:text-gray-300">Total asignado:</span>
-                      <span
-                        className={`font-bold ${
-                          isDistributionValid()
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-red-600 dark:text-red-400'
-                        }`}
-                      >
-                        {getTotalDistributed()} / {numQuestions}
-                      </span>
+                          <div className="flex items-center gap-2 flex-1">
+                            <CheckCircle2 className="w-5 h-5 text-primary-600 dark:text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <span className="text-gray-900 dark:text-white font-medium">{option.label}</span>
+                          </div>
+                        </label>
+                      ))}
                     </div>
                   </div>
+
+                  {selectedQuestionTypes.length > 0 && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+                        Distribución de Preguntas <span className="text-red-500">*</span>
+                      </label>
+                      <div className="space-y-3">
+                        {selectedQuestionTypes.map((type) => {
+                          const option = QUESTION_TYPE_OPTIONS.find((opt) => opt.value === type);
+                          return (
+                            <div key={type} className="flex items-center gap-3">
+                              <label className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {option?.label}:
+                              </label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max={numQuestions}
+                                value={questionDistribution[type] || 0}
+                                onChange={(e) => handleDistributionChange(type, parseInt(e.target.value) || 0)}
+                                className="w-24"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-medium text-gray-700 dark:text-gray-300">Total asignado:</span>
+                          <span
+                            className={`font-bold ${
+                              isDistributionValid()
+                                ? 'text-green-600 dark:text-green-400'
+                                : 'text-red-600 dark:text-red-400'
+                            }`}
+                          >
+                            {getTotalDistributed()} / {numQuestions}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Campo de archivo solo en modo file */}
+              {inputMode === 'file' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                    Archivo PDF o Word <span className="text-red-500">*</span>
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="exam-file-upload"
+                    />
+                    <label
+                      htmlFor="exam-file-upload"
+                      className="cursor-pointer flex flex-col items-center gap-3"
+                    >
+                      <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full">
+                        <Upload className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      {uploadedFile ? (
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                            {uploadedFile.name}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setUploadedFile(null);
+                            }}
+                            className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            Eliminar archivo
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            Haz clic para seleccionar o arrastra un archivo aquí
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            PDF o Word (máximo 10MB)
+                          </p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                    Sube un documento con contenido educativo. La IA generará preguntas basadas en el contenido.
+                  </p>
                 </div>
               )}
 

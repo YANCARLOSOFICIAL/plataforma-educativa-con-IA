@@ -8,7 +8,7 @@ import { contentAPI } from '@/lib/api';
 import { AIProvider, RubricRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
 import AIProviderSelector from '@/components/AIProviderSelector';
-import { Loader2, Plus, X } from 'lucide-react';
+import { Loader2, Plus, X, Upload, FileText } from 'lucide-react';
 
 interface FormData {
   topic: string;
@@ -18,6 +18,8 @@ interface FormData {
   objectives: { value: string }[];
   criteria: { value: string }[];
 }
+
+type InputMode = 'form' | 'file';
 
 const FACULTY_OPTIONS = [
   { value: 'ingenieria', label: 'Ingeniería' },
@@ -106,6 +108,8 @@ export default function CreateRubricPage() {
   const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
   const [modelName, setModelName] = useState('qwen3:4b');
   const [selectedFaculty, setSelectedFaculty] = useState('ingenieria');
+  const [inputMode, setInputMode] = useState<InputMode>('form');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const {
     register,
@@ -157,31 +161,82 @@ export default function CreateRubricPage() {
       setLoading(true);
       setError('');
 
-      const objectives = data.objectives.map(obj => obj.value.trim()).filter(obj => obj.length > 0);
-      const criteria = data.criteria.map(crit => crit.value.trim()).filter(crit => crit.length > 0);
+      let activity;
 
-      if (objectives.length === 0 || criteria.length === 0) {
-        setError('Debes agregar al menos un objetivo y un criterio');
-        setLoading(false);
+      if (inputMode === 'file') {
+        // Validar que se haya seleccionado un archivo
+        if (!uploadedFile) {
+          throw new Error('Por favor selecciona un archivo PDF o Word');
+        }
+
+        // Crear FormData para enviar archivo
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        formData.append('topic', data.topic);
+        formData.append('faculty', data.faculty);
+        formData.append('career', data.career);
+        formData.append('semester', data.semester);
+        formData.append('ai_provider', aiProvider);
+        if (modelName) {
+          formData.append('model_name', modelName);
+        }
+
+        activity = await contentAPI.generateRubricFromFile(formData);
+      } else {
+        // Modo formulario normal
+        const objectives = data.objectives.map(obj => obj.value.trim()).filter(obj => obj.length > 0);
+        const criteria = data.criteria.map(crit => crit.value.trim()).filter(crit => crit.length > 0);
+
+        if (objectives.length === 0 || criteria.length === 0) {
+          setError('Debes agregar al menos un objetivo y un criterio');
+          setLoading(false);
+          return;
+        }
+
+        const request: RubricRequest = {
+          topic: data.topic,
+          faculty: data.faculty,
+          career: data.career,
+          semester: data.semester,
+          objectives,
+          criteria,
+          ai_provider: aiProvider,
+          model_name: modelName,
+        };
+
+        activity = await contentAPI.generateRubric(request);
+      }
+
+      router.push(`/activity/${activity.id}`);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.message || 'Error al generar la rúbrica');
+      setLoading(false);
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validar que sea PDF o Word
+      const validExtensions = ['.pdf', '.doc', '.docx'];
+      const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+
+      if (!validExtensions.includes(fileExtension)) {
+        setError('Por favor selecciona un archivo PDF o Word válido (.pdf, .doc, .docx)');
+        setUploadedFile(null);
         return;
       }
 
-      const request: RubricRequest = {
-        topic: data.topic,
-        faculty: data.faculty,
-        career: data.career,
-        semester: data.semester,
-        objectives,
-        criteria,
-        ai_provider: aiProvider,
-        model_name: modelName,
-      };
+      // Validar tamaño (máximo 10MB)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setError('El archivo no debe superar los 10MB');
+        setUploadedFile(null);
+        return;
+      }
 
-      const activity = await contentAPI.generateRubric(request);
-      router.push(`/activity/${activity.id}`);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error al generar la rúbrica');
-      setLoading(false);
+      setUploadedFile(file);
+      setError('');
     }
   };
 
@@ -200,6 +255,46 @@ export default function CreateRubricPage() {
               <p className="text-sm">{error}</p>
             </div>
           )}
+
+          {/* Selector de modo de entrada */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              Método de entrada
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setInputMode('form');
+                  setUploadedFile(null);
+                  setError('');
+                }}
+                className={`flex items-center justify-center gap-2 p-4 border-2 rounded-lg transition-all ${
+                  inputMode === 'form'
+                    ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
+                }`}
+              >
+                <FileText className="w-5 h-5" />
+                <span className="font-semibold">Formulario Completo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setInputMode('file');
+                  setError('');
+                }}
+                className={`flex items-center justify-center gap-2 p-4 border-2 rounded-lg transition-all ${
+                  inputMode === 'file'
+                    ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
+                }`}
+              >
+                <Upload className="w-5 h-5" />
+                <span className="font-semibold">Subir PDF/Word</span>
+              </button>
+            </div>
+          </div>
 
           <div>
             <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
@@ -276,10 +371,71 @@ export default function CreateRubricPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              Objetivos de Aprendizaje
-            </label>
+          {/* Campo de archivo solo en modo file */}
+          {inputMode === 'file' && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                Archivo PDF o Word <span className="text-red-500">*</span>
+              </label>
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="rubric-file-upload"
+                />
+                <label
+                  htmlFor="rubric-file-upload"
+                  className="cursor-pointer flex flex-col items-center gap-3"
+                >
+                  <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full">
+                    <Upload className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  {uploadedFile ? (
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                        {uploadedFile.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setUploadedFile(null);
+                        }}
+                        className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Eliminar archivo
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        Haz clic para seleccionar o arrastra un archivo aquí
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        PDF o Word (máximo 10MB)
+                      </p>
+                    </div>
+                  )}
+                </label>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                Sube una rúbrica existente en PDF o Word. La IA la analizará y generará una rúbrica estructurada basada en el contenido.
+              </p>
+            </div>
+          )}
+
+          {/* Objetivos y Criterios solo en modo formulario */}
+          {inputMode === 'form' && (
+            <>
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                  Objetivos de Aprendizaje
+                </label>
             <div className="space-y-2">
               {objectiveFields.map((field, index) => (
                 <div key={field.id} className="flex gap-2">
@@ -345,6 +501,8 @@ export default function CreateRubricPage() {
               Agregar Criterio
             </button>
           </div>
+            </>
+          )}
 
           <AIProviderSelector
             value={aiProvider}
