@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '@/lib/store';
 import { contentAPI } from '@/lib/api';
-import { AIProvider, SummaryRequest } from '@/types';
+import { SummaryRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
-import AIProviderSelector from '@/components/AIProviderSelector';
 import { FileText, AlignLeft, Upload, Type } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
 import { toast } from 'sonner';
@@ -25,8 +24,6 @@ export default function CreateSummaryPage() {
   const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
-  const [modelName, setModelName] = useState('qwen3:4b');
   const [inputMode, setInputMode] = useState<InputMode>('text');
   const [pdfFile, setPdfFile] = useState<File | null>(null);
 
@@ -64,17 +61,13 @@ export default function CreateSummaryPage() {
 
         activity = await contentAPI.generateSummaryFromPDF(
           pdfFile,
-          data.length,
-          aiProvider,
-          modelName
+          data.length
         );
       } else {
         // Modo texto normal
         const request: SummaryRequest = {
           text: data.text,
           length: data.length,
-          ai_provider: aiProvider,
-          model_name: modelName,
         };
 
         activity = await contentAPI.generateSummary(request);
@@ -315,16 +308,7 @@ export default function CreateSummaryPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <AIProviderSelector
-                  value={aiProvider}
-                  onChange={setAiProvider}
-                  modelName={modelName}
-                  onModelChange={setModelName}
-                />
-              </div>
-
-              <div className="pt-2">
+              <div className="pt-6">
                 <Button
                   type="submit"
                   variant="primary"

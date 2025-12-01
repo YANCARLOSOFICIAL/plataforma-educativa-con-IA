@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useAuthStore } from '@/lib/store';
 import { contentAPI } from '@/lib/api';
-import { AIProvider, RubricRequest } from '@/types';
+import { RubricRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
-import AIProviderSelector from '@/components/AIProviderSelector';
 import { Loader2, Plus, X, Upload, FileText } from 'lucide-react';
 
 interface FormData {
@@ -105,8 +104,6 @@ export default function CreateRubricPage() {
   const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
-  const [modelName, setModelName] = useState('qwen3:4b');
   const [selectedFaculty, setSelectedFaculty] = useState('ingenieria');
   const [inputMode, setInputMode] = useState<InputMode>('form');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -176,10 +173,6 @@ export default function CreateRubricPage() {
         formData.append('faculty', data.faculty);
         formData.append('career', data.career);
         formData.append('semester', data.semester);
-        formData.append('ai_provider', aiProvider);
-        if (modelName) {
-          formData.append('model_name', modelName);
-        }
 
         activity = await contentAPI.generateRubricFromFile(formData);
       } else {
@@ -200,8 +193,6 @@ export default function CreateRubricPage() {
           semester: data.semester,
           objectives,
           criteria,
-          ai_provider: aiProvider,
-          model_name: modelName,
         };
 
         activity = await contentAPI.generateRubric(request);
@@ -504,14 +495,7 @@ export default function CreateRubricPage() {
             </>
           )}
 
-          <AIProviderSelector
-            value={aiProvider}
-            onChange={setAiProvider}
-            modelName={modelName}
-            onModelChange={setModelName}
-          />
-
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-6">
             <button
               type="submit"
               disabled={loading}

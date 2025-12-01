@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '@/lib/store';
 import { contentAPI } from '@/lib/api';
-import { AIProvider, WritingCorrectionRequest } from '@/types';
+import { WritingCorrectionRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
-import AIProviderSelector from '@/components/AIProviderSelector';
 import { Loader2, Upload, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,8 +21,6 @@ export default function CreateWritingCorrectionPage() {
   const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
-  const [modelName, setModelName] = useState('qwen3:4b');
   const [inputMode, setInputMode] = useState<InputMode>('text');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -88,10 +85,6 @@ export default function CreateWritingCorrectionPage() {
         toast.loading('Procesando archivo...', { id: 'correction' });
         const formData = new FormData();
         formData.append('file', selectedFile);
-        formData.append('ai_provider', aiProvider);
-        if (modelName) {
-          formData.append('model_name', modelName);
-        }
 
         const activity = await contentAPI.correctWritingFile(formData);
         toast.success('¡Archivo corregido exitosamente!', { id: 'correction' });
@@ -100,8 +93,6 @@ export default function CreateWritingCorrectionPage() {
         toast.loading('Corrigiendo texto...', { id: 'correction' });
         const request: WritingCorrectionRequest = {
           text: data.text,
-          ai_provider: aiProvider,
-          model_name: modelName,
         };
 
         const activity = await contentAPI.correctWriting(request);
@@ -259,14 +250,7 @@ export default function CreateWritingCorrectionPage() {
             </ul>
           </div>
 
-          <AIProviderSelector
-            value={aiProvider}
-            onChange={setAiProvider}
-            modelName={modelName}
-            onModelChange={setModelName}
-          />
-
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-6">
             <button
               type="submit"
               disabled={

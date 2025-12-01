@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '@/lib/store';
 import { contentAPI } from '@/lib/api';
-import { AIProvider, WordSearchRequest } from '@/types';
+import { WordSearchRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
-import AIProviderSelector from '@/components/AIProviderSelector';
 import { Loader2 } from 'lucide-react';
 
 interface FormData {
@@ -21,8 +20,6 @@ export default function CreateWordSearchPage() {
   const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
-  const [modelName, setModelName] = useState('qwen3:4b');
 
   const {
     register,
@@ -53,8 +50,6 @@ export default function CreateWordSearchPage() {
         topic: data.topic,
         num_words: data.num_words,
         grid_size: data.grid_size,
-        ai_provider: aiProvider,
-        model_name: modelName,
       };
 
       const activity = await contentAPI.generateWordSearch(request);
@@ -161,14 +156,7 @@ export default function CreateWordSearchPage() {
             </div>
           </div>
 
-          <AIProviderSelector
-            value={aiProvider}
-            onChange={setAiProvider}
-            modelName={modelName}
-            onModelChange={setModelName}
-          />
-
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-6">
             <button
               type="submit"
               disabled={loading}

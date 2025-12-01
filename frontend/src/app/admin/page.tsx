@@ -212,7 +212,7 @@ export default function AdminDashboardPage() {
                 <Zap className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 Acceso Rápido
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Link href="/admin/users">
                   <Card variant="glass" padding="lg" hover className="h-full group">
                     <div className="flex items-center gap-4">
@@ -243,6 +243,24 @@ export default function AdminDashboardPage() {
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           Revisar y moderar todas las actividades
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+
+                <Link href="/admin/config">
+                  <Card variant="glass" padding="lg" hover className="h-full group">
+                    <div className="flex items-center gap-4">
+                      <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
+                        <Activity className="w-7 h-7 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1">
+                          Configuración IA
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Configurar modelo de IA global del sistema
                         </p>
                       </div>
                     </div>

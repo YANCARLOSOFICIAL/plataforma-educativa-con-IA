@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '@/lib/store';
 import { contentAPI } from '@/lib/api';
-import { AIProvider, ExamRequest } from '@/types';
+import { ExamRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
-import AIProviderSelector from '@/components/AIProviderSelector';
 import { FileQuestion, CheckCircle2, Upload, FileText } from 'lucide-react';
 import { Button, Input, Card } from '@/components/ui';
 import { toast } from 'sonner';
@@ -40,8 +39,6 @@ export default function CreateExamPage() {
   const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
-  const [modelName, setModelName] = useState('qwen3:4b');
   const [inputMode, setInputMode] = useState<InputMode>('form');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [questionDistribution, setQuestionDistribution] = useState<Record<string, number>>({
@@ -132,10 +129,6 @@ export default function CreateExamPage() {
         if (data.grade_level) {
           formData.append('grade_level', data.grade_level);
         }
-        formData.append('ai_provider', aiProvider);
-        if (modelName) {
-          formData.append('model_name', modelName);
-        }
 
         activity = await contentAPI.generateExamFromFile(formData);
       } else {
@@ -160,8 +153,6 @@ export default function CreateExamPage() {
           question_types: data.question_types,
           question_distribution: filteredDistribution,
           grade_level: data.grade_level,
-          ai_provider: aiProvider,
-          model_name: modelName,
         };
 
         activity = await contentAPI.generateExam(request);
@@ -449,16 +440,7 @@ export default function CreateExamPage() {
                 )}
               </div>
 
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <AIProviderSelector
-                  value={aiProvider}
-                  onChange={setAiProvider}
-                  modelName={modelName}
-                  onModelChange={setModelName}
-                />
-              </div>
-
-              <div className="pt-2">
+              <div className="pt-6">
                 <Button
                   type="submit"
                   variant="primary"

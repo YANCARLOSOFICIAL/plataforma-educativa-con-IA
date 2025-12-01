@@ -126,7 +126,8 @@ async def generate_exam(
             question_types=request.question_types,
             grade_level=request.grade_level or "General",
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -203,7 +204,8 @@ async def generate_exam_from_file(
             question_types=["multiple_choice", "true_false", "short_answer"],
             grade_level=grade_level or "General",
             provider=provider_enum,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -239,7 +241,8 @@ async def generate_summary(
             text=request.text,
             length=request.length,
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -275,7 +278,8 @@ async def generate_class_activity(
             grade_level=request.grade_level,
             objectives=request.objectives,
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -352,7 +356,8 @@ async def generate_class_activity_from_file(
             grade_level=grade_level,
             objectives=[],
             provider=provider_enum,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -392,7 +397,8 @@ async def generate_rubric(
             objectives=request.objectives,
             criteria=request.criteria,
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -472,7 +478,8 @@ async def generate_rubric_from_file(
             objectives=[],
             criteria=[],
             provider=provider_enum,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -507,7 +514,8 @@ async def correct_writing(
         result = await content_generator.correct_writing(
             text=request.text,
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -574,7 +582,8 @@ async def correct_writing_file(
         result = await content_generator.correct_writing(
             text=text,
             provider=provider_enum,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -609,7 +618,8 @@ async def generate_slides(
             num_slides=request.num_slides,
             grade_level=request.grade_level or "General",
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -646,7 +656,8 @@ async def generate_email(
             recipient_type=request.recipient_type,
             tone=request.tone,
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -681,7 +692,8 @@ async def generate_survey(
             num_questions=request.num_questions,
             question_types=request.question_types,
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -718,7 +730,8 @@ async def generate_story(
             characters=request.characters,
             moral=request.moral,
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -754,7 +767,8 @@ async def generate_crossword(
             num_words=request.num_words,
             difficulty=request.difficulty,
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(
@@ -790,7 +804,8 @@ async def generate_word_search(
             num_words=request.num_words,
             grid_size=request.grid_size,
             provider=request.ai_provider,
-            model_name=request.model_name
+            model_name=request.model_name,
+            db=db
         )
 
         activity = await save_activity_with_credits(

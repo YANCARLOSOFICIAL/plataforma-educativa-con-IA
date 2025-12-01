@@ -7,6 +7,7 @@ from ..database import get_db
 from ..models.user import User, UserRole
 from ..models.activity import Activity, ActivityType
 from ..models.credit import CreditTransaction, TransactionType
+from ..models.system_config import SystemConfig
 from ..schemas.user import UserResponse
 from ..schemas.activity import ActivityResponse
 from ..utils.auth import get_current_active_user
@@ -411,3 +412,91 @@ async def delete_activity(
     db.commit()
 
     return {"message": "Actividad eliminada correctamente"}
+
+
+# Schemas for System Configuration
+class SystemConfigResponse(BaseModel):
+    id: int
+    default_ai_provider: str
+    default_model_name: str
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class SystemConfigUpdate(BaseModel):
+    default_ai_provider: str  # ollama, openai, gemini
+    default_model_name: str
+
+
+# Endpoint 9: GET /api/admin/config - Get system configuration
+@router.get("/config", response_model=SystemConfigResponse)
+async def get_system_config(
+    current_user: User = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene la configuración global del sistema
+    """
+    config = db.query(SystemConfig).first()
+
+    if not config:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Configuración del sistema no encontrada"
+        )
+
+    return SystemConfigResponse.from_orm(config)
+
+
+# Endpoint 10: PATCH /api/admin/config - Update system configuration
+@router.patch("/config", response_model=SystemConfigResponse)
+async def update_system_config(
+    config_update: SystemConfigUpdate,
+    current_user: User = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Actualiza la configuración global del sistema
+    """
+    # Validar que el proveedor sea válido
+    valid_providers = ["ollama", "openai", "gemini"]
+    if config_update.default_ai_provider not in valid_providers:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Proveedor inválido. Debe ser uno de: {', '.join(valid_providers)}"
+        )
+
+    # Validar modelos según el proveedor
+    valid_models = {
+        "ollama": ["qwen3:4b", "llama2:7b-chat", "deepseek-r1:8b", "llama3:8b", "qwen2.5vl:latest"],
+        "openai": ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo"],
+        "gemini": ["gemini-pro", "gemini-pro-vision"]
+    }
+
+    if config_update.default_model_name not in valid_models.get(config_update.default_ai_provider, []):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Modelo inválido para {config_update.default_ai_provider}. Modelos válidos: {', '.join(valid_models.get(config_update.default_ai_provider, []))}"
+        )
+
+    config = db.query(SystemConfig).first()
+
+    if not config:
+        # Si no existe, crear una nueva configuración
+        config = SystemConfig(
+            default_ai_provider=config_update.default_ai_provider,
+            default_model_name=config_update.default_model_name
+        )
+        db.add(config)
+    else:
+        # Actualizar la configuración existente
+        config.default_ai_provider = config_update.default_ai_provider
+        config.default_model_name = config_update.default_model_name
+
+    db.commit()
+    db.refresh(config)
+
+    return SystemConfigResponse.from_orm(config)

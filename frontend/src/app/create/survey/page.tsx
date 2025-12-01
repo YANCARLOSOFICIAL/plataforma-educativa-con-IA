@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '@/lib/store';
 import { contentAPI } from '@/lib/api';
-import { AIProvider, SurveyRequest } from '@/types';
+import { SurveyRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
-import AIProviderSelector from '@/components/AIProviderSelector';
 import { Loader2 } from 'lucide-react';
 
 interface FormData {
@@ -21,8 +20,6 @@ export default function CreateSurveyPage() {
   const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
-  const [modelName, setModelName] = useState('qwen3:4b');
 
   const {
     register,
@@ -50,8 +47,6 @@ export default function CreateSurveyPage() {
         topic: data.topic,
         num_questions: data.num_questions,
         question_types: data.question_types,
-        ai_provider: aiProvider,
-        model_name: modelName,
       };
 
       const activity = await contentAPI.generateSurvey(request);
@@ -149,14 +144,7 @@ export default function CreateSurveyPage() {
             </div>
           </div>
 
-          <AIProviderSelector
-            value={aiProvider}
-            onChange={setAiProvider}
-            modelName={modelName}
-            onModelChange={setModelName}
-          />
-
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-6">
             <button
               type="submit"
               disabled={loading}

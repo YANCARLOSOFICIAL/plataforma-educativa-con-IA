@@ -88,14 +88,14 @@ export interface ExamRequest {
   question_types: string[];
   question_distribution?: Record<string, number>;
   grade_level?: string;
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
 export interface SummaryRequest {
   text: string;
   length: 'short' | 'medium' | 'long';
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
@@ -104,7 +104,7 @@ export interface ClassActivityRequest {
   duration_minutes: number;
   grade_level: string;
   objectives: string[];
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
@@ -115,13 +115,13 @@ export interface RubricRequest {
   semester: string;
   objectives: string[];
   criteria: string[];
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
 export interface WritingCorrectionRequest {
   text: string;
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
@@ -129,7 +129,7 @@ export interface SlidesRequest {
   topic: string;
   num_slides: number;
   grade_level?: string;
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
@@ -137,7 +137,7 @@ export interface EmailRequest {
   purpose: string;
   recipient_type: string;
   tone: string;
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
@@ -145,7 +145,7 @@ export interface SurveyRequest {
   topic: string;
   num_questions: number;
   question_types: string[];
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
@@ -154,7 +154,7 @@ export interface StoryRequest {
   story_type: 'cuento' | 'fabula' | 'aventura';
   characters: string[];
   moral?: string;
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
@@ -162,7 +162,7 @@ export interface CrosswordRequest {
   topic: string;
   num_words: number;
   difficulty: 'easy' | 'medium' | 'hard';
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 
@@ -170,7 +170,7 @@ export interface WordSearchRequest {
   topic: string;
   num_words: number;
   grid_size: number;
-  ai_provider: AIProvider;
+  ai_provider?: AIProvider;
   model_name?: string;
 }
 

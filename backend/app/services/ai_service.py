@@ -2,6 +2,8 @@ import httpx
 from typing import Optional, Dict, Any
 from ..config import settings
 from ..models.activity import AIProvider
+from ..models.system_config import SystemConfig
+from sqlalchemy.orm import Session
 
 # Importaciones opcionales
 try:
@@ -29,23 +31,61 @@ class AIService:
         if GEMINI_AVAILABLE and settings.GEMINI_API_KEY:
             genai.configure(api_key=settings.GEMINI_API_KEY)
 
+    @staticmethod
+    def get_system_config(db: Session) -> Dict[str, str]:
+        """
+        Obtiene la configuración global del sistema
+        """
+        config = db.query(SystemConfig).first()
+        if config:
+            return {
+                "provider": config.default_ai_provider,
+                "model": config.default_model_name
+            }
+        # Valores por defecto si no hay configuración
+        return {
+            "provider": "ollama",
+            "model": "qwen3:4b"
+        }
+
     async def generate_content(
         self,
         prompt: str,
-        provider: AIProvider,
+        provider: Optional[AIProvider] = None,
         model_name: Optional[str] = None,
         temperature: float = 0.7,
-        max_tokens: int = 2000
+        max_tokens: int = 2000,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
-        Genera contenido usando el proveedor de AI especificado
+        Genera contenido usando el proveedor de AI especificado.
+        Si no se especifica provider, usa la configuración global del sistema.
         """
+        # Si no se especificó proveedor o modelo, usar configuración global
+        if (provider is None or model_name is None) and db is not None:
+            config = self.get_system_config(db)
+            if provider is None:
+                provider = AIProvider(config["provider"])
+            if model_name is None:
+                model_name = config["model"]
+
+        # Valores por defecto si aún no están definidos
+        if provider is None:
+            provider = AIProvider.OLLAMA
+        if model_name is None:
+            if provider == AIProvider.OLLAMA:
+                model_name = "qwen3:4b"
+            elif provider == AIProvider.OPENAI:
+                model_name = "gpt-3.5-turbo"
+            elif provider == AIProvider.GEMINI:
+                model_name = "gemini-pro"
+
         if provider == AIProvider.OLLAMA:
-            return await self._generate_ollama(prompt, model_name or "qwen2.5vl:latest", temperature)
+            return await self._generate_ollama(prompt, model_name, temperature)
         elif provider == AIProvider.OPENAI:
-            return await self._generate_openai(prompt, model_name or "gpt-3.5-turbo", temperature, max_tokens)
+            return await self._generate_openai(prompt, model_name, temperature, max_tokens)
         elif provider == AIProvider.GEMINI:
-            return await self._generate_gemini(prompt, model_name or "gemini-pro", temperature, max_tokens)
+            return await self._generate_gemini(prompt, model_name, temperature, max_tokens)
         else:
             raise ValueError(f"Proveedor de AI no soportado: {provider}")
 

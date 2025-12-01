@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useAuthStore } from '@/lib/store';
 import { contentAPI } from '@/lib/api';
-import { AIProvider, StoryRequest } from '@/types';
+import { StoryRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
-import AIProviderSelector from '@/components/AIProviderSelector';
 import { Loader2, Plus, X } from 'lucide-react';
 
 interface FormData {
@@ -22,8 +21,6 @@ export default function CreateStoryPage() {
   const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
-  const [modelName, setModelName] = useState('qwen3:4b');
 
   const {
     register,
@@ -71,8 +68,6 @@ export default function CreateStoryPage() {
         story_type: data.story_type,
         characters,
         moral: data.moral,
-        ai_provider: aiProvider,
-        model_name: modelName,
       };
 
       const activity = await contentAPI.generateStory(request);
@@ -207,14 +202,7 @@ export default function CreateStoryPage() {
             </div>
           )}
 
-          <AIProviderSelector
-            value={aiProvider}
-            onChange={setAiProvider}
-            modelName={modelName}
-            onModelChange={setModelName}
-          />
-
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-6">
             <button
               type="submit"
               disabled={loading}

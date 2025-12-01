@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useAuthStore } from '@/lib/store';
 import { contentAPI } from '@/lib/api';
-import { AIProvider, ClassActivityRequest } from '@/types';
+import { ClassActivityRequest } from '@/types';
 import FormLayout from '@/components/FormLayout';
-import AIProviderSelector from '@/components/AIProviderSelector';
 import { Loader2, Plus, X, Upload, FileText } from 'lucide-react';
 
 interface FormData {
@@ -31,8 +30,6 @@ export default function CreateClassActivityPage() {
   const user = useAuthStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [aiProvider, setAiProvider] = useState<AIProvider>(AIProvider.OLLAMA);
-  const [modelName, setModelName] = useState('qwen3:4b');
   const [inputMode, setInputMode] = useState<InputMode>('form');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
@@ -79,10 +76,6 @@ export default function CreateClassActivityPage() {
         formData.append('topic', data.topic);
         formData.append('duration_minutes', data.duration_minutes.toString());
         formData.append('grade_level', data.grade_level);
-        formData.append('ai_provider', aiProvider);
-        if (modelName) {
-          formData.append('model_name', modelName);
-        }
 
         activity = await contentAPI.generateClassActivityFromFile(formData);
       } else {
@@ -102,8 +95,6 @@ export default function CreateClassActivityPage() {
           duration_minutes: data.duration_minutes,
           grade_level: data.grade_level,
           objectives,
-          ai_provider: aiProvider,
-          model_name: modelName,
         };
 
         activity = await contentAPI.generateClassActivity(request);
@@ -350,14 +341,7 @@ export default function CreateClassActivityPage() {
           </div>
           )}
 
-          <AIProviderSelector
-            value={aiProvider}
-            onChange={setAiProvider}
-            modelName={modelName}
-            onModelChange={setModelName}
-          />
-
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-6">
             <button
               type="submit"
               disabled={loading}

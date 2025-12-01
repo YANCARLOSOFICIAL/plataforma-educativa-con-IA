@@ -1,6 +1,7 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from .ai_service import ai_service
 from ..models.activity import AIProvider
+from sqlalchemy.orm import Session
 import json
 
 
@@ -26,9 +27,10 @@ class ContentGenerator:
         num_questions: int,
         question_types: List[str],
         grade_level: str,
-        provider: AIProvider,
-        model_name: str = None,
-        question_distribution: Dict[str, int] = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        question_distribution: Optional[Dict[str, int]] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera un examen con diferentes tipos de preguntas
@@ -76,7 +78,8 @@ IMPORTANTE:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return self._normalize_result(result)
@@ -85,8 +88,9 @@ IMPORTANTE:
         self,
         text: str,
         length: str,
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera un resumen de un texto
@@ -125,7 +129,8 @@ Todo en ESPAÑOL.
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return self._normalize_result(result)
@@ -136,8 +141,9 @@ Todo en ESPAÑOL.
         duration_minutes: int,
         grade_level: str,
         objectives: List[str],
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera una actividad de clase
@@ -171,7 +177,8 @@ Estructura la actividad en formato JSON:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return self._normalize_result(result)
@@ -184,8 +191,9 @@ Estructura la actividad en formato JSON:
         semester: str,
         objectives: List[str],
         criteria: List[str],
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera una rúbrica de evaluación
@@ -239,7 +247,8 @@ Formato JSON:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return self._normalize_result(result)
@@ -247,8 +256,9 @@ Formato JSON:
     async def correct_writing(
         self,
         text: str,
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Corrige un texto (ortografía, gramática, sintaxis)
@@ -279,7 +289,8 @@ Proporciona la corrección en formato JSON:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return self._normalize_result(result)
@@ -289,8 +300,9 @@ Proporciona la corrección en formato JSON:
         topic: str,
         num_slides: int,
         grade_level: str,
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera contenido para diapositivas con imágenes relevantes
@@ -327,7 +339,8 @@ INSTRUCCIONES PARA image_search:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         normalized_result = self._normalize_result(result)
@@ -363,8 +376,9 @@ INSTRUCCIONES PARA image_search:
         purpose: str,
         recipient_type: str,
         tone: str,
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera texto para un correo electrónico
@@ -388,7 +402,8 @@ Formato JSON:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return self._normalize_result(result)
@@ -398,8 +413,9 @@ Formato JSON:
         topic: str,
         num_questions: int,
         question_types: List[str],
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera una encuesta
@@ -430,7 +446,8 @@ Formato JSON:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return self._normalize_result(result)
@@ -441,8 +458,9 @@ Formato JSON:
         story_type: str,
         characters: List[str],
         moral: str,
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera un cuento, fábula o aventura personalizada
@@ -469,7 +487,8 @@ Formato JSON:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return self._normalize_result(result)
@@ -479,8 +498,9 @@ Formato JSON:
         topic: str,
         num_words: int,
         difficulty: str,
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera un crucigrama
@@ -520,7 +540,8 @@ Formato JSON:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return self._normalize_result(result)
@@ -588,8 +609,9 @@ Formato JSON:
         topic: str,
         num_words: int,
         grid_size: int,
-        provider: AIProvider,
-        model_name: str = None
+        provider: Optional[AIProvider] = None,
+        model_name: Optional[str] = None,
+        db: Optional[Session] = None
     ) -> Dict[str, Any]:
         """
         Genera una sopa de letras
@@ -621,7 +643,8 @@ Formato JSON:
         result = await ai_service.generate_content(
             prompt=prompt,
             provider=provider,
-            model_name=model_name
+            model_name=model_name,
+            db=db
         )
 
         return result
