@@ -4,5 +4,6 @@ from .content import router as content_router
 from .export_router import router as export_router
 from .admin import router as admin_router
 from .chatbot import router as chatbot_router
+from .courses import router as courses_router
 
-__all__ = ["auth_router", "activities_router", "content_router", "export_router", "admin_router", "chatbot_router"]
+__all__ = ["auth_router", "activities_router", "content_router", "export_router", "admin_router", "chatbot_router", "courses_router"]

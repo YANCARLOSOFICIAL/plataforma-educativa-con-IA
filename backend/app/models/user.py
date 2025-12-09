@@ -30,3 +30,5 @@ class User(Base):
     credit_transactions = relationship("CreditTransaction", back_populates="user")
     chatbots = relationship("Chatbot", back_populates="creator")
     chat_conversations = relationship("ChatConversation", back_populates="user")
+    courses_created = relationship("Course", back_populates="teacher", foreign_keys="Course.teacher_id")
+    course_enrollments = relationship("CourseEnrollment", back_populates="student", foreign_keys="CourseEnrollment.student_id")

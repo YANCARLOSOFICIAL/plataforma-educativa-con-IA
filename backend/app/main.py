@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base, SessionLocal
-from .routers import auth_router, activities_router, content_router, export_router, admin_router, chatbot_router
+from .routers import auth_router, activities_router, content_router, export_router, admin_router, chatbot_router, courses_router
 from .models import SystemConfig
 
 # Crear tablas
@@ -50,6 +50,7 @@ app.include_router(content_router)
 app.include_router(export_router)
 app.include_router(admin_router)
 app.include_router(chatbot_router)
+app.include_router(courses_router)
 
 
 @app.get("/")

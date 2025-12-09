@@ -262,6 +262,76 @@ async def generate_summary(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/summary-file", response_model=ActivityResponse)
+async def generate_summary_from_file(
+    file: UploadFile = File(...),
+    length: str = Form("medium"),
+    ai_provider: str = Form(...),
+    model_name: str = Form(None),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Genera un resumen desde un archivo PDF o Word
+    """
+    try:
+        # Leer el contenido del archivo
+        content = await file.read()
+
+        # Extraer texto según el tipo de archivo
+        text = ""
+        file_extension = file.filename.split('.')[-1].lower()
+
+        if file_extension == 'pdf':
+            # Extraer texto de PDF
+            pdf_file = io.BytesIO(content)
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            for page in pdf_reader.pages:
+                text += page.extract_text() + "\n"
+
+        elif file_extension in ['doc', 'docx']:
+            # Extraer texto de Word
+            doc_file = io.BytesIO(content)
+            doc = Document(doc_file)
+            for paragraph in doc.paragraphs:
+                text += paragraph.text + "\n"
+
+        else:
+            raise HTTPException(status_code=400, detail="Formato de archivo no soportado. Use PDF o Word (.doc, .docx)")
+
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo")
+
+        # Convertir ai_provider string a enum
+        from ..models.activity import AIProvider
+        provider_enum = AIProvider(ai_provider)
+
+        # Generar resumen del texto extraído
+        result = await content_generator.generate_summary(
+            text=text,
+            length=length,
+            provider=provider_enum,
+            model_name=model_name,
+            db=db
+        )
+
+        activity = await save_activity_with_credits(
+            db=db,
+            user=current_user,
+            activity_type=ActivityType.SUMMARY,
+            request_data={
+                "title": f"Resumen: {file.filename}",
+                "ai_provider": provider_enum
+            },
+            generated_content=result
+        )
+
+        return ActivityResponse.from_orm(activity)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/class-activity", response_model=ActivityResponse)
 async def generate_class_activity(
     request: ClassActivityRequest,
@@ -631,6 +701,83 @@ async def generate_slides(
                 "subject": request.topic,
                 "grade_level": request.grade_level,
                 "ai_provider": request.ai_provider
+            },
+            generated_content=result
+        )
+
+        return ActivityResponse.from_orm(activity)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/slides-file", response_model=ActivityResponse)
+async def generate_slides_from_file(
+    file: UploadFile = File(...),
+    topic: str = Form(...),
+    num_slides: int = Form(10),
+    grade_level: str = Form(None),
+    ai_provider: str = Form(...),
+    model_name: str = Form(None),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Genera presentación desde un archivo PDF o Word
+    """
+    try:
+        # Leer el contenido del archivo
+        content = await file.read()
+
+        # Extraer texto según el tipo de archivo
+        text = ""
+        file_extension = file.filename.split('.')[-1].lower()
+
+        if file_extension == 'pdf':
+            # Extraer texto de PDF
+            pdf_file = io.BytesIO(content)
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            for page in pdf_reader.pages:
+                text += page.extract_text() + "\n"
+
+        elif file_extension in ['doc', 'docx']:
+            # Extraer texto de Word
+            doc_file = io.BytesIO(content)
+            doc = Document(doc_file)
+            for paragraph in doc.paragraphs:
+                text += paragraph.text + "\n"
+
+        else:
+            raise HTTPException(status_code=400, detail="Formato de archivo no soportado. Use PDF o Word (.doc, .docx)")
+
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo")
+
+        # Convertir ai_provider string a enum
+        from ..models.activity import AIProvider
+        provider_enum = AIProvider(ai_provider)
+
+        # Generar presentación usando el texto extraído como contexto
+        prompt_with_context = f"Basándote en el siguiente contenido extraído de un documento:\n\n{text}\n\nCrea una presentación sobre: {topic}"
+
+        result = await content_generator.generate_slides(
+            topic=prompt_with_context,
+            num_slides=num_slides,
+            grade_level=grade_level or "General",
+            provider=provider_enum,
+            model_name=model_name,
+            db=db
+        )
+
+        activity = await save_activity_with_credits(
+            db=db,
+            user=current_user,
+            activity_type=ActivityType.SLIDES,
+            request_data={
+                "title": f"Presentación: {topic} (desde {file.filename})",
+                "subject": topic,
+                "grade_level": grade_level,
+                "ai_provider": provider_enum
             },
             generated_content=result
         )

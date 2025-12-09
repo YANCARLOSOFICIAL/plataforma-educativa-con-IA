@@ -21,6 +21,7 @@ import {
   Settings,
   Clock,
   Users,
+  GraduationCap,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -47,6 +48,7 @@ export default function Sidebar() {
       // Estudiantes: enfoque en aprender y explorar
       return [
         { label: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
+        { label: 'Mis Cursos', href: '/courses', icon: GraduationCap },
         { label: 'Chatbots IA', href: '/chatbots', icon: Bot, badge: 'Tutor' },
         { label: 'Explorar Recursos', href: '/community', icon: Users },
       ];
@@ -54,9 +56,10 @@ export default function Sidebar() {
       // Docentes y Admins: herramientas completas de creación
       return [
         { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { label: 'Mis Cursos', href: '/courses', icon: GraduationCap, badge: 'Nuevo' },
         { label: 'Mis Actividades', href: '/activities', icon: FileText },
         { label: 'Crear Contenido', href: '/create', icon: PlusCircle },
-        { label: 'Chatbots IA', href: '/chatbots', icon: Bot, badge: 'Nuevo' },
+        { label: 'Chatbots IA', href: '/chatbots', icon: Bot },
         { label: 'Comunidad', href: '/community', icon: Users },
         { label: 'Historial', href: '/history', icon: Clock },
       ];

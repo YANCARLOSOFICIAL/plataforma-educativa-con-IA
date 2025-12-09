@@ -50,6 +50,7 @@ class Activity(Base):
     # Relations
     creator_id = Column(Integer, ForeignKey("users.id"))
     creator = relationship("User", back_populates="activities")
+    course_activities = relationship("CourseActivity", back_populates="activity", cascade="all, delete-orphan")
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

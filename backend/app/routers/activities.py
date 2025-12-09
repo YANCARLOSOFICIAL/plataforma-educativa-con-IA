@@ -5,6 +5,7 @@ from ..database import get_db
 from ..models.user import User, UserRole
 from ..models.activity import Activity, ActivityType
 from ..models.credit import CreditTransaction
+from ..models.course import CourseActivity, CourseEnrollment
 from ..schemas.activity import ActivityResponse, ActivityUpdate
 from ..utils.auth import get_current_active_user, get_current_user_optional
 
@@ -63,6 +64,7 @@ async def get_activity(
     """
     Obtiene una actividad específica.
     Permite acceso anónimo solo para actividades públicas.
+    Permite acceso a estudiantes inscritos en cursos que contienen la actividad.
     """
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
 
@@ -74,9 +76,29 @@ async def get_activity(
         # Si la actividad es privada, requiere autenticación
         if current_user is None:
             raise HTTPException(status_code=401, detail="Autenticación requerida para ver esta actividad")
+
         # Verificar que sea el creador o admin
-        if activity.creator_id != current_user.id and current_user.role != UserRole.ADMIN:
-            raise HTTPException(status_code=403, detail="No tienes permiso para ver esta actividad")
+        if activity.creator_id == current_user.id or current_user.role == UserRole.ADMIN:
+            return ActivityResponse.from_orm(activity)
+
+        # Verificar si el usuario es estudiante inscrito en un curso que contiene esta actividad
+        course_with_activity = db.query(CourseActivity).filter(
+            CourseActivity.activity_id == activity_id
+        ).first()
+
+        if course_with_activity:
+            # Verificar si el usuario está inscrito en ese curso
+            enrollment = db.query(CourseEnrollment).filter(
+                CourseEnrollment.course_id == course_with_activity.course_id,
+                CourseEnrollment.student_id == current_user.id
+            ).first()
+
+            if enrollment:
+                # El usuario está inscrito en un curso que contiene esta actividad
+                return ActivityResponse.from_orm(activity)
+
+        # Si llegamos aquí, el usuario no tiene permiso
+        raise HTTPException(status_code=403, detail="No tienes permiso para ver esta actividad")
 
     return ActivityResponse.from_orm(activity)
 
