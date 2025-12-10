@@ -8,6 +8,7 @@ from ..database import get_db
 from ..models.user import User, UserRole
 from ..models.course import Course, CourseEnrollment, CourseActivity, CourseInvitation
 from ..models.activity import Activity
+from ..models.chatbot import Chatbot
 from ..schemas.course import (
     CourseCreate,
     CourseUpdate,
@@ -24,6 +25,7 @@ from ..schemas.course import (
     StudentInCourseResponse,
     ActivityInCourseResponse
 )
+from ..schemas.chatbot import ChatbotResponse
 from ..utils.auth import get_current_active_user
 
 router = APIRouter(prefix="/api/courses", tags=["Courses"])
@@ -640,6 +642,129 @@ async def remove_student_from_course(
     db.commit()
 
     return None
+
+
+# ==================== RUTAS DE CHATBOTS EN CURSOS ====================
+
+@router.post("/{course_id}/chatbots/{chatbot_id}", response_model=dict)
+async def add_chatbot_to_course(
+    course_id: int,
+    chatbot_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Agregar un chatbot a un curso (solo el docente creador)
+    """
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Curso no encontrado")
+
+    # Verificar que sea el docente creador
+    if course.teacher_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo el docente creador puede agregar chatbots"
+        )
+
+    # Verificar que el chatbot exista
+    chatbot = db.query(Chatbot).filter(Chatbot.id == chatbot_id).first()
+    if not chatbot:
+        raise HTTPException(status_code=404, detail="Chatbot no encontrado")
+
+    # Verificar que el chatbot sea público o del docente
+    if not chatbot.is_public and chatbot.creator_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permiso para agregar este chatbot"
+        )
+
+    # Verificar que no esté ya agregado
+    if chatbot in course.chatbots:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Este chatbot ya está en el curso"
+        )
+
+    # Agregar chatbot al curso
+    course.chatbots.append(chatbot)
+    db.commit()
+
+    return {"message": "Chatbot agregado al curso exitosamente"}
+
+
+@router.delete("/{course_id}/chatbots/{chatbot_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_chatbot_from_course(
+    course_id: int,
+    chatbot_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Remover un chatbot de un curso (solo el docente creador)
+    """
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Curso no encontrado")
+
+    # Verificar que sea el docente creador
+    if course.teacher_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo el docente creador puede remover chatbots"
+        )
+
+    # Verificar que el chatbot exista
+    chatbot = db.query(Chatbot).filter(Chatbot.id == chatbot_id).first()
+    if not chatbot:
+        raise HTTPException(status_code=404, detail="Chatbot no encontrado")
+
+    # Verificar que esté en el curso
+    if chatbot not in course.chatbots:
+        raise HTTPException(status_code=404, detail="Chatbot no encontrado en este curso")
+
+    # Remover chatbot del curso
+    course.chatbots.remove(chatbot)
+    db.commit()
+
+    return None
+
+
+@router.get("/{course_id}/chatbots", response_model=List[ChatbotResponse])
+async def get_course_chatbots(
+    course_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtener todos los chatbots de un curso
+    """
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Curso no encontrado")
+
+    # Verificar permisos
+    if current_user.role == UserRole.DOCENTE:
+        if course.teacher_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permiso para ver este curso"
+            )
+    else:
+        # Verificar que el estudiante esté inscrito
+        enrollment = db.query(CourseEnrollment).filter(
+            CourseEnrollment.course_id == course_id,
+            CourseEnrollment.student_id == current_user.id
+        ).first()
+        if not enrollment:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No estás inscrito en este curso"
+            )
+
+    # Retornar solo chatbots activos
+    active_chatbots = [chatbot for chatbot in course.chatbots if chatbot.is_active]
+    return active_chatbots
 
 
 # ==================== ESTADÍSTICAS ====================

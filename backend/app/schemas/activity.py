@@ -74,14 +74,14 @@ class ExamRequest(BaseModel):
     question_types: list[str] = ["multiple_choice", "true_false", "short_answer"]
     question_distribution: Optional[Dict[str, int]] = None
     grade_level: Optional[str] = None
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
 class SummaryRequest(BaseModel):
     text: str
     length: str = "medium"  # short, medium, long
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
@@ -90,7 +90,7 @@ class ClassActivityRequest(BaseModel):
     duration_minutes: int
     grade_level: str
     objectives: list[str]
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
@@ -101,13 +101,13 @@ class RubricRequest(BaseModel):
     semester: str
     objectives: list[str]
     criteria: list[str]
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
 class WritingCorrectionRequest(BaseModel):
     text: str
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
@@ -115,7 +115,7 @@ class SlidesRequest(BaseModel):
     topic: str
     num_slides: int = 10
     grade_level: Optional[str] = None
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
@@ -123,7 +123,7 @@ class EmailRequest(BaseModel):
     purpose: str
     recipient_type: str
     tone: str = "formal"
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
@@ -131,7 +131,7 @@ class SurveyRequest(BaseModel):
     topic: str
     num_questions: int = 10
     question_types: list[str] = ["multiple_choice", "scale", "open"]
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
@@ -140,7 +140,7 @@ class StoryRequest(BaseModel):
     story_type: str = "cuento"  # cuento, fabula, aventura
     characters: list[str]
     moral: Optional[str] = None
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
@@ -148,7 +148,7 @@ class CrosswordRequest(BaseModel):
     topic: str
     num_words: int = 15
     difficulty: str = "medium"
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None
 
 
@@ -156,5 +156,5 @@ class WordSearchRequest(BaseModel):
     topic: str
     num_words: int = 15
     grid_size: int = 15
-    ai_provider: AIProvider = AIProvider.OLLAMA
+    ai_provider: Optional[AIProvider] = None
     model_name: Optional[str] = None

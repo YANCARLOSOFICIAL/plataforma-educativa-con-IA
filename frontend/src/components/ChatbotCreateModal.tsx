@@ -38,8 +38,8 @@ export default function ChatbotCreateModal({
     personality: templateData?.personality || '',
     knowledge_areas: templateData?.knowledge_areas || [],
     instruction_prompt: templateData?.instruction_prompt || '',
-    ai_provider: 'ollama',
-    model_name: 'qwen3:4b',  // Modelo ligero y rápido por defecto
+    ai_provider: undefined,  // Usará configuración del sistema
+    model_name: undefined,   // Usará configuración del sistema
     temperature: 70,
     is_public: false,
   });
@@ -65,12 +65,21 @@ export default function ChatbotCreateModal({
 
   // Actualizar el modelo cuando cambia el proveedor
   const handleProviderChange = (provider: string) => {
-    const models = getAvailableModels(provider);
-    setFormData({
-      ...formData,
-      ai_provider: provider,
-      model_name: models[0] || '',
-    });
+    if (provider === '') {
+      // Si selecciona "Usar configuración del sistema"
+      setFormData({
+        ...formData,
+        ai_provider: undefined,
+        model_name: undefined,
+      });
+    } else {
+      const models = getAvailableModels(provider);
+      setFormData({
+        ...formData,
+        ai_provider: provider,
+        model_name: models[0] || '',
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -195,36 +204,42 @@ export default function ChatbotCreateModal({
             {/* AI Provider */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Proveedor de IA
+                Proveedor de IA (Opcional)
               </label>
               <select
-                value={formData.ai_provider}
+                value={formData.ai_provider || ''}
                 onChange={(e) => handleProviderChange(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               >
+                <option value="">Usar configuración del sistema (Recomendado)</option>
                 <option value="ollama">Ollama (Gratis, Local)</option>
                 <option value="openai">OpenAI (Con costo)</option>
                 <option value="gemini">Google Gemini (Con costo)</option>
               </select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Si no seleccionas un proveedor, se usará la configuración global del sistema
+              </p>
             </div>
 
-            {/* Model Selection */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Modelo de IA
-              </label>
-              <select
-                value={formData.model_name}
-                onChange={(e) => setFormData({ ...formData, model_name: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              >
-                {getAvailableModels(formData.ai_provider || 'ollama').map((model) => (
-                  <option key={model} value={model}>
-                    {model}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Model Selection - Solo mostrar si se seleccionó un proveedor */}
+            {formData.ai_provider && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Modelo de IA
+                </label>
+                <select
+                  value={formData.model_name || ''}
+                  onChange={(e) => setFormData({ ...formData, model_name: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                >
+                  {getAvailableModels(formData.ai_provider).map((model) => (
+                    <option key={model} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Temperature */}
             <div>

@@ -12,8 +12,8 @@ class ChatbotBase(BaseModel):
     personality: Optional[str] = None
     knowledge_areas: Optional[List[str]] = None
     instruction_prompt: Optional[str] = None
-    ai_provider: Optional[str] = "ollama"
-    model_name: Optional[str] = "qwen2.5:latest"
+    ai_provider: Optional[str] = None  # Si es None, usa configuración del sistema
+    model_name: Optional[str] = None   # Si es None, usa configuración del sistema
     temperature: Optional[int] = Field(default=70, ge=0, le=100)
     is_public: Optional[bool] = False
 

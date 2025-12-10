@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
 from ..database import Base
+from .course_chatbot import course_chatbots
 
 
 class ChatbotType(str, enum.Enum):
@@ -43,6 +44,9 @@ class Chatbot(Base):
 
     # Conversations
     conversations = relationship("ChatConversation", back_populates="chatbot", cascade="all, delete-orphan")
+
+    # Courses relationship
+    courses = relationship("Course", secondary=course_chatbots, back_populates="chatbots")
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

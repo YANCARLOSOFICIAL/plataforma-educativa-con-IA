@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, T
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from ..database import Base
+from .course_chatbot import course_chatbots
 
 
 class Course(Base):
@@ -26,6 +27,7 @@ class Course(Base):
     enrollments = relationship("CourseEnrollment", back_populates="course", cascade="all, delete-orphan")
     course_activities = relationship("CourseActivity", back_populates="course", cascade="all, delete-orphan")
     invitations = relationship("CourseInvitation", back_populates="course", cascade="all, delete-orphan")
+    chatbots = relationship("Chatbot", secondary=course_chatbots, back_populates="courses")
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)

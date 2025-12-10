@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Users, FileText, Mail, Plus, Trash2, Copy,
-  BookOpen, Calendar, CheckCircle, XCircle, Clock
+  BookOpen, Calendar, CheckCircle, XCircle, Clock, MessageSquare, Send
 } from 'lucide-react';
 import { Button, Card, Badge, Input } from '@/components/ui';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -43,6 +43,15 @@ interface Invitation {
   expires_at: string;
 }
 
+interface Chatbot {
+  id: number;
+  name: string;
+  description: string;
+  chatbot_type: string;
+  is_active: boolean;
+  creator_id: number;
+}
+
 interface CourseDetail {
   id: number;
   title: string;
@@ -57,7 +66,7 @@ interface CourseDetail {
   activities: Activity[];
 }
 
-type TabType = 'students' | 'activities' | 'invitations';
+type TabType = 'students' | 'activities' | 'invitations' | 'chatbots';
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -68,10 +77,14 @@ export default function CourseDetailPage() {
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [myActivities, setMyActivities] = useState<any[]>([]);
+  const [chatbots, setChatbots] = useState<Chatbot[]>([]);
+  const [myChatbots, setMyChatbots] = useState<Chatbot[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('activities');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showAddActivityModal, setShowAddActivityModal] = useState(false);
+  const [showAddChatbotModal, setShowAddChatbotModal] = useState(false);
+  const [selectedChatbot, setSelectedChatbot] = useState<Chatbot | null>(null);
 
   const isTeacher = user?.role === 'docente' || user?.role === 'admin';
 
@@ -79,6 +92,10 @@ export default function CourseDetailPage() {
     fetchCourseDetail();
     fetchInvitations();
     fetchMyActivities();
+    fetchCourseChatbots();
+    if (isTeacher) {
+      fetchMyChatbots();
+    }
   }, [courseId]);
 
   const fetchCourseDetail = async () => {
@@ -131,6 +148,38 @@ export default function CourseDetailPage() {
       }
     } catch (error) {
       console.error('Error fetching activities:', error);
+    }
+  };
+
+  const fetchCourseChatbots = async () => {
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(`http://localhost:8000/api/courses/${courseId}/chatbots`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setChatbots(data);
+      }
+    } catch (error) {
+      console.error('Error fetching chatbots:', error);
+    }
+  };
+
+  const fetchMyChatbots = async () => {
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch('http://localhost:8000/api/chatbots/', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMyChatbots(data);
+      }
+    } catch (error) {
+      console.error('Error fetching my chatbots:', error);
     }
   };
 
@@ -241,6 +290,52 @@ export default function CourseDetailPage() {
     toast.success('Link copiado al portapapeles');
   };
 
+  const handleAddChatbot = async (chatbotId: number) => {
+    const toastId = toast.loading('Agregando chatbot...');
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(`http://localhost:8000/api/courses/${courseId}/chatbots/${chatbotId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        fetchCourseChatbots();
+        setShowAddChatbotModal(false);
+        toast.success('Chatbot agregado al curso', { id: toastId });
+      } else {
+        const error = await response.json();
+        toast.error(error.detail || 'Error al agregar chatbot', { id: toastId });
+      }
+    } catch (error) {
+      console.error('Error adding chatbot:', error);
+      toast.error('Error al agregar chatbot', { id: toastId });
+    }
+  };
+
+  const handleRemoveChatbot = async (chatbotId: number) => {
+    if (!confirm('¿Estás seguro de eliminar este chatbot del curso?')) return;
+
+    const toastId = toast.loading('Eliminando chatbot...');
+    try {
+      const token = useAuthStore.getState().token;
+      const response = await fetch(`http://localhost:8000/api/courses/${courseId}/chatbots/${chatbotId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        fetchCourseChatbots();
+        toast.success('Chatbot eliminado del curso', { id: toastId });
+      } else {
+        toast.error('Error al eliminar chatbot', { id: toastId });
+      }
+    } catch (error) {
+      console.error('Error removing chatbot:', error);
+      toast.error('Error al eliminar chatbot', { id: toastId });
+    }
+  };
+
   if (loading || !course) {
     return (
       <DashboardLayout>
@@ -255,11 +350,13 @@ export default function CourseDetailPage() {
     ? [
         { id: 'activities' as TabType, label: 'Actividades', count: course.activity_count, icon: FileText },
         { id: 'students' as TabType, label: 'Estudiantes', count: course.student_count, icon: Users },
+        { id: 'chatbots' as TabType, label: 'Chatbots', count: chatbots.length, icon: MessageSquare },
         { id: 'invitations' as TabType, label: 'Invitaciones', count: invitations.length, icon: Mail },
       ]
     : [
         { id: 'activities' as TabType, label: 'Actividades', count: course.activity_count, icon: FileText },
         { id: 'students' as TabType, label: 'Estudiantes', count: course.student_count, icon: Users },
+        { id: 'chatbots' as TabType, label: 'Chatbots', count: chatbots.length, icon: MessageSquare },
       ];
 
   return (
@@ -439,8 +536,10 @@ export default function CourseDetailPage() {
                                     </span>
                                   )}
                                   {!isTeacher && (
-                                    <span className="text-xs text-primary-600 dark:text-primary-400 font-medium">
-                                      Clic para realizar →
+                                    <span className="text-xs text-primary-600 dark:text-primary-400 font-medium flex items-center gap-1">
+                                      {['exam', 'survey', 'crossword', 'word_search'].includes(activity.activity_type)
+                                        ? '✏️ Clic para realizar →'
+                                        : '👁️ Clic para ver →'}
                                     </span>
                                   )}
                                 </div>
@@ -458,12 +557,18 @@ export default function CourseDetailPage() {
                           </Card>
                         );
 
+                        // Determinar si la actividad es interactiva
+                        const isInteractive = ['exam', 'survey', 'crossword', 'word_search'].includes(activity.activity_type);
+                        const activityLink = isInteractive
+                          ? `/activity/${activity.id}/complete`
+                          : `/activity/${activity.id}`;
+
                         return (
                           <SlideIn key={activity.id} delay={index * 0.05} direction="right">
                             {isTeacher ? (
                               ActivityContent
                             ) : (
-                              <Link href={`/activity/${activity.id}`}>
+                              <Link href={activityLink}>
                                 {ActivityContent}
                               </Link>
                             )}
@@ -622,6 +727,96 @@ export default function CourseDetailPage() {
                 </div>
               </FadeIn>
             )}
+
+            {/* Chatbots Tab */}
+            {activeTab === 'chatbots' && (
+              <FadeIn>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {isTeacher ? 'Chatbots del Curso' : 'Asistentes Disponibles'}
+                    </h2>
+                    {isTeacher && (
+                      <Button variant="primary" onClick={() => setShowAddChatbotModal(true)}>
+                        <Plus className="w-5 h-5 mr-2" />
+                        Agregar Chatbot
+                      </Button>
+                    )}
+                  </div>
+
+                  {chatbots.length === 0 ? (
+                    <Card variant="glass" padding="xl" className="text-center">
+                      <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                        No hay chatbots asignados
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 mb-4">
+                        {isTeacher
+                          ? 'Agrega chatbots para que los estudiantes puedan interactuar con ellos'
+                          : 'El docente aún no ha asignado chatbots a este curso'}
+                      </p>
+                      {isTeacher && (
+                        <Button variant="primary" onClick={() => setShowAddChatbotModal(true)}>
+                          <Plus className="w-5 h-5 mr-2" />
+                          Agregar Primer Chatbot
+                        </Button>
+                      )}
+                    </Card>
+                  ) : (
+                    <div className="space-y-3">
+                      {chatbots.map((chatbot, index) => (
+                        <SlideIn key={chatbot.id} delay={index * 0.05} direction="right">
+                          <Card
+                            variant="glass"
+                            padding="md"
+                            className={`group transition-all ${!isTeacher ? 'hover:shadow-xl hover:scale-[1.02] cursor-pointer' : 'hover:shadow-lg'}`}
+                            onClick={() => !isTeacher && setSelectedChatbot(chatbot)}
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <MessageSquare className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                                  <h3 className={`font-bold text-lg ${!isTeacher ? 'text-primary-600 dark:text-primary-400 group-hover:text-primary-700 dark:group-hover:text-primary-300' : 'text-gray-900 dark:text-white'}`}>
+                                    {chatbot.name}
+                                  </h3>
+                                  <Badge variant="primary">{chatbot.chatbot_type}</Badge>
+                                </div>
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                                  {chatbot.description}
+                                </p>
+                                {!isTeacher && (
+                                  <span className="text-xs text-primary-600 dark:text-primary-400 font-medium flex items-center gap-1">
+                                    💬 Clic para chatear →
+                                  </span>
+                                )}
+                              </div>
+                              {isTeacher && (
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => handleRemoveChatbot(chatbot.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                              {!isTeacher && (
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={() => setSelectedChatbot(chatbot)}
+                                >
+                                  <MessageSquare className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </Card>
+                        </SlideIn>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </FadeIn>
+            )}
           </div>
         </div>
       </PageTransition>
@@ -721,6 +916,96 @@ export default function CourseDetailPage() {
               </Button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Modal de Agregar Chatbot */}
+      {showAddChatbotModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              Agregar Chatbot al Curso
+            </h2>
+            <div className="space-y-3">
+              {myChatbots.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    No tienes chatbots creados
+                  </p>
+                  <Button variant="primary" onClick={() => router.push('/chatbots')}>
+                    Crear Chatbot
+                  </Button>
+                </div>
+              ) : (
+                myChatbots
+                  .filter(cb => !chatbots.find(c => c.id === cb.id))
+                  .map((chatbot) => (
+                    <Card key={chatbot.id} variant="glass" padding="md" className="group hover:shadow-lg transition-all">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MessageSquare className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                            <h3 className="font-bold text-gray-900 dark:text-white">{chatbot.name}</h3>
+                            <Badge variant="primary">{chatbot.chatbot_type}</Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{chatbot.description}</p>
+                        </div>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleAddChatbot(chatbot.id)}
+                        >
+                          Agregar
+                        </Button>
+                      </div>
+                    </Card>
+                  ))
+              )}
+            </div>
+            <div className="mt-6">
+              <Button
+                variant="secondary"
+                onClick={() => setShowAddChatbotModal(false)}
+                className="w-full"
+              >
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal/Redirect de Chat con Chatbot */}
+      {selectedChatbot && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card variant="glass" padding="lg" className="max-w-md w-full shadow-2xl">
+            <div className="text-center">
+              <MessageSquare className="w-16 h-16 text-primary-600 dark:text-primary-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {selectedChatbot.name}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Serás redirigido a la página de chatbots para iniciar la conversación
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => setSelectedChatbot(null)}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => router.push(`/chatbots?chatId=${selectedChatbot.id}`)}
+                  className="flex-1"
+                >
+                  <MessageSquare className="w-5 h-5 mr-2" />
+                  Ir a Chat
+                </Button>
+              </div>
+            </div>
+          </Card>
         </div>
       )}
     </DashboardLayout>

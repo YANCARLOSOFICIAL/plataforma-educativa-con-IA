@@ -441,12 +441,36 @@ function StoryContent({ content }: { content: any }) {
 
 // Componente para Crucigramas
 function CrosswordContent({ content }: { content: any }) {
-  const clues = content.clues || {};
-  const across = clues.across || [];
-  const down = clues.down || [];
+  // Manejar dos formatos: el viejo (clues.across/down) y el nuevo (clues con type)
+  let across: any[] = [];
+  let down: any[] = [];
+
+  if (Array.isArray(content.clues)) {
+    // Nuevo formato: clues es un array con field 'type'
+    across = content.clues.filter((c: any) => c.type === 'across').map((c: any) => ({
+      ...c,
+      clue: c.text || c.clue
+    }));
+    down = content.clues.filter((c: any) => c.type === 'down').map((c: any) => ({
+      ...c,
+      clue: c.text || c.clue
+    }));
+  } else {
+    // Formato viejo: clues.across y clues.down
+    const clues = content.clues || {};
+    across = clues.across || [];
+    down = clues.down || [];
+  }
 
   return (
     <div className="space-y-6">
+      {/* Descripción del crucigrama */}
+      {content.description && (
+        <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <p className="text-blue-900 dark:text-blue-200 font-medium">{content.description}</p>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-2 gap-6">
         {across.length > 0 && (
           <div>
@@ -456,12 +480,16 @@ function CrosswordContent({ content }: { content: any }) {
             </h3>
             <div className="space-y-2">
               {across.map((clue: any, idx: number) => (
-                <div key={idx} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-3">
-                  <span className="font-bold text-blue-600 dark:text-blue-400">{clue.number}.</span>{' '}
-                  <span className="text-gray-700 dark:text-gray-300">{clue.clue}</span>
-                  <span className="text-gray-400 dark:text-gray-500 text-sm ml-2">
-                    ({clue.answer?.length || 0} letras)
-                  </span>
+                <div key={idx} className="bg-white dark:bg-gray-800 border-l-4 border-blue-500 border-r border-t border-b border-gray-200 dark:border-gray-700 rounded-r p-3 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <span className="font-bold text-blue-600 dark:text-blue-400 text-lg">{clue.number}.</span>{' '}
+                      <span className="text-gray-700 dark:text-gray-300">{clue.clue}</span>
+                    </div>
+                    <span className="flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-semibold px-2 py-1 rounded">
+                      {clue.length || clue.answer?.length || 0} letras
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -476,12 +504,16 @@ function CrosswordContent({ content }: { content: any }) {
             </h3>
             <div className="space-y-2">
               {down.map((clue: any, idx: number) => (
-                <div key={idx} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-3">
-                  <span className="font-bold text-green-600 dark:text-green-400">{clue.number}.</span>{' '}
-                  <span className="text-gray-700 dark:text-gray-300">{clue.clue}</span>
-                  <span className="text-gray-400 dark:text-gray-500 text-sm ml-2">
-                    ({clue.answer?.length || 0} letras)
-                  </span>
+                <div key={idx} className="bg-white dark:bg-gray-800 border-l-4 border-green-500 border-r border-t border-b border-gray-200 dark:border-gray-700 rounded-r p-3 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <span className="font-bold text-green-600 dark:text-green-400 text-lg">{clue.number}.</span>{' '}
+                      <span className="text-gray-700 dark:text-gray-300">{clue.clue}</span>
+                    </div>
+                    <span className="flex-shrink-0 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-semibold px-2 py-1 rounded">
+                      {clue.length || clue.answer?.length || 0} letras
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -489,9 +521,9 @@ function CrosswordContent({ content }: { content: any }) {
         )}
       </div>
 
-      <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 border border-gray-300 dark:border-gray-600">
-        <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
-          💡 Usa los botones de exportación para descargar el crucigrama completo con la cuadrícula
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-4">
+        <p className="text-sm text-gray-700 dark:text-gray-300 text-center font-medium">
+          💡 <strong>Nota:</strong> Usa los botones de exportación arriba para descargar el crucigrama completo con la cuadrícula, o haz clic en "✏️ Realizar" para completarlo de forma interactiva
         </p>
       </div>
     </div>

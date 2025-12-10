@@ -155,7 +155,7 @@ async def generate_exam_from_file(
     topic: str = Form(...),
     num_questions: int = Form(10),
     grade_level: str = Form(None),
-    ai_provider: str = Form(...),
+    ai_provider: str = Form(None),
     model_name: str = Form(None),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -191,9 +191,9 @@ async def generate_exam_from_file(
         if not text.strip():
             raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo")
 
-        # Convertir ai_provider string a enum
+        # Convertir ai_provider string a enum (si está presente)
         from ..models.activity import AIProvider
-        provider_enum = AIProvider(ai_provider)
+        provider_enum = AIProvider(ai_provider) if ai_provider else None if ai_provider else None
 
         # Generar examen usando el texto extraído como contexto
         prompt_with_context = f"Basándote en el siguiente contenido extraído de un documento:\n\n{text}\n\nGenera un examen sobre: {topic}"
@@ -266,7 +266,7 @@ async def generate_summary(
 async def generate_summary_from_file(
     file: UploadFile = File(...),
     length: str = Form("medium"),
-    ai_provider: str = Form(...),
+    ai_provider: str = Form(None),
     model_name: str = Form(None),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -304,7 +304,7 @@ async def generate_summary_from_file(
 
         # Convertir ai_provider string a enum
         from ..models.activity import AIProvider
-        provider_enum = AIProvider(ai_provider)
+        provider_enum = AIProvider(ai_provider) if ai_provider else None
 
         # Generar resumen del texto extraído
         result = await content_generator.generate_summary(
@@ -377,7 +377,7 @@ async def generate_class_activity_from_file(
     topic: str = Form(...),
     duration_minutes: int = Form(60),
     grade_level: str = Form(...),
-    ai_provider: str = Form(...),
+    ai_provider: str = Form(None),
     model_name: str = Form(None),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -415,7 +415,7 @@ async def generate_class_activity_from_file(
 
         # Convertir ai_provider string a enum
         from ..models.activity import AIProvider
-        provider_enum = AIProvider(ai_provider)
+        provider_enum = AIProvider(ai_provider) if ai_provider else None
 
         # Generar actividad de clase usando el texto extraído como contexto
         prompt_with_context = f"Basándote en el siguiente contenido extraído de un documento:\n\n{text}\n\nGenera una actividad de clase sobre: {topic}"
@@ -497,7 +497,7 @@ async def generate_rubric_from_file(
     faculty: str = Form(...),
     career: str = Form(...),
     semester: str = Form(...),
-    ai_provider: str = Form(...),
+    ai_provider: str = Form(None),
     model_name: str = Form(None),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -535,7 +535,7 @@ async def generate_rubric_from_file(
 
         # Convertir ai_provider string a enum
         from ..models.activity import AIProvider
-        provider_enum = AIProvider(ai_provider)
+        provider_enum = AIProvider(ai_provider) if ai_provider else None
 
         # Generar rúbrica usando el texto extraído como contexto adicional
         prompt_with_context = f"Basándote en el siguiente contenido extraído de un documento:\n\n{text}\n\nGenera una rúbrica de evaluación para: {topic}"
@@ -608,7 +608,7 @@ async def correct_writing(
 @router.post("/writing-correction-file", response_model=ActivityResponse)
 async def correct_writing_file(
     file: UploadFile = File(...),
-    ai_provider: str = Form(...),
+    ai_provider: str = Form(None),
     model_name: str = Form(None),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -646,7 +646,7 @@ async def correct_writing_file(
 
         # Convertir ai_provider string a enum
         from ..models.activity import AIProvider
-        provider_enum = AIProvider(ai_provider)
+        provider_enum = AIProvider(ai_provider) if ai_provider else None
 
         # Corregir el texto
         result = await content_generator.correct_writing(
@@ -717,7 +717,7 @@ async def generate_slides_from_file(
     topic: str = Form(...),
     num_slides: int = Form(10),
     grade_level: str = Form(None),
-    ai_provider: str = Form(...),
+    ai_provider: str = Form(None),
     model_name: str = Form(None),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -755,7 +755,7 @@ async def generate_slides_from_file(
 
         # Convertir ai_provider string a enum
         from ..models.activity import AIProvider
-        provider_enum = AIProvider(ai_provider)
+        provider_enum = AIProvider(ai_provider) if ai_provider else None
 
         # Generar presentación usando el texto extraído como contexto
         prompt_with_context = f"Basándote en el siguiente contenido extraído de un documento:\n\n{text}\n\nCrea una presentación sobre: {topic}"

@@ -505,34 +505,66 @@ Formato JSON:
         """
         Genera un crucigrama
         """
-        prompt = f"""
-Crea un crucigrama sobre: {topic}
-Número de palabras: {num_words}
-Dificultad: {difficulty}
+        difficulty_instructions = {
+            "easy": "Palabras de 4-7 letras con pistas muy directas y definiciones simples",
+            "medium": "Palabras de 5-9 letras con pistas descriptivas claras",
+            "hard": "Palabras de 6-12 letras con pistas más elaboradas"
+        }
 
-Formato JSON:
+        prompt = f"""
+Crea un crucigrama educativo sobre el tema: {topic}
+Número total de palabras: {num_words}
+Dificultad: {difficulty} - {difficulty_instructions.get(difficulty, difficulty_instructions['medium'])}
+
+INSTRUCCIONES IMPORTANTES:
+1. Cada pista debe ser CLARA y ESPECÍFICA - usa definiciones directas, descripciones o características únicas
+2. Las pistas deben ser tipo:
+   - Definición: "Animal que ladra" → PERRO
+   - Característica: "El planeta más grande del sistema solar" → JUPITER
+   - Función: "Se usa para escribir en el pizarrón" → MARCADOR
+3. Evita pistas ambiguas o que puedan tener múltiples respuestas
+4. Distribuye las palabras balanceadamente entre horizontales (across) y verticales (down)
+5. Las posiciones deben formar un crucigrama coherente donde las palabras se crucen naturalmente
+6. Numera las pistas en orden de lectura (de arriba a abajo, de izquierda a derecha)
+7. INCLUYE la longitud de cada respuesta en letras
+
+Ejemplo de buenas pistas:
+- "Capital de Francia (5 letras)" → PARIS
+- "Órgano que bombea sangre (7 letras)" → CORAZON
+- "Estrella más cercana a la Tierra (3 letras)" → SOL
+
+RESPONDE ÚNICAMENTE CON EL JSON EN EL SIGUIENTE FORMATO. NO agregues texto adicional.
+
+Formato JSON OBLIGATORIO:
 {{
-    "title": "Título del crucigrama",
+    "title": "Crucigrama: [Título sobre el tema]",
+    "description": "Breve descripción",
     "clues": {{
         "across": [
-            {{
-                "number": 1,
-                "clue": "Pista horizontal",
-                "answer": "RESPUESTA",
-                "position": {{"row": 0, "col": 0}}
-            }}
+            {{"number": 1, "clue": "Mamífero marino más grande (7 letras)", "answer": "BALLENA", "length": 7}},
+            {{"number": 3, "clue": "Capital de Francia (5 letras)", "answer": "PARIS", "length": 5}}
         ],
         "down": [
-            {{
-                "number": 2,
-                "clue": "Pista vertical",
-                "answer": "RESPUESTA",
-                "position": {{"row": 0, "col": 0}}
-            }}
+            {{"number": 2, "clue": "Gas que respiramos (7 letras)", "answer": "OXIGENO", "length": 7}},
+            {{"number": 4, "clue": "Planeta rojo (5 letras)", "answer": "MARTE", "length": 5}}
         ]
     }},
     "grid_size": {{"rows": 15, "cols": 15}}
 }}
+
+IMPORTANTE:
+- Las pistas "across" son HORIZONTALES
+- Las pistas "down" son VERTICALES
+- DEBE haber dos objetos separados: "across" y "down"
+- Cada pista DEBE incluir: number, clue, answer, length
+- La longitud (length) DEBE coincidir exactamente con el número de letras de answer
+
+REGLAS PARA LAS POSICIONES:
+- Asegúrate de que las palabras se crucen en al menos una letra común
+- Las posiciones row y col empiezan en 0
+- Para across: la palabra va horizontalmente desde (row, col) hacia la derecha
+- Para down: la palabra va verticalmente desde (row, col) hacia abajo
+- Deja espacio entre palabras para que no se superpongan incorrectamente
 
 {JSON_FORMAT_INSTRUCTIONS}
 """
